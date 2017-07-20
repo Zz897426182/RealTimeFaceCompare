@@ -2,7 +2,7 @@ package com.hzgc.scala.job.streaming
 
 import com.hzgc.java.util.PropertiesUtils
 import com.hzgc.jni.{NativeFunction, FaceFunction}
-import com.hzgc.scala.util.{ComparisonDataUtils, ContextInitUtils}
+import com.hzgc.scala.util.{ComparisonDataUtils}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.streaming.{Durations, StreamingContext}
@@ -27,6 +27,7 @@ object FaceRecognizeAlarmJob {
     val sqlContext = new SQLContext(sc)
     //初始化StreamingContext
     val ssc = new StreamingContext(sc,Durations.seconds(3))
+
 
     //获取kafka集群的动态人脸照片
     val photoDStream = ComparisonDataUtils.getKafkaDynamicPhoto(ssc)

@@ -50,22 +50,8 @@ object ComparisonDataUtils {
       classOf[org.apache.hadoop.hbase.client.Result])
    rdd
   }
-  def main(args: Array[String]) {
-   // val scc =ContextInitUtils.getStreamingContext("demo","local[*]",3)
-    //获取kafka的inputDStream
-    val sc = ContextInitUtils.getSparkContext("aaaaaa","local[8]")
-    val result = getHbaseStaticPhoto(sc)
-    val ss=result.map(a =>{
-      val k =   Bytes.toString(a._1.get())
-      val v =a._2.getValue("t1".getBytes,"p".getBytes)
-      (k,v)
-    })
-    ss.foreach(println)
-    val count = result.count()
-    println(count)
 
 
-  }
 
 
 }
