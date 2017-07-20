@@ -1,4 +1,4 @@
-package com.hzgc.dubbo.calculate;
+package com.hzgc.dubbo.dynamicrepo;
 
 
 public interface DynamicPhotoService {
