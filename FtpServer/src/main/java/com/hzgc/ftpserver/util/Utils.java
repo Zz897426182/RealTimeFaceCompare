@@ -145,26 +145,66 @@ public class Utils {
         return picType;
     }
 
+    public static String faceNum(String facekey){
+        String column = facekey.substring(facekey.lastIndexOf("_") + 1,facekey.length());
+        return column;
+    }
+
+    public static String faceRowKey(String faceKey){
+        String rowKeyStr = faceKey.substring(0,faceKey.lastIndexOf("_"));
+        StringBuilder rowkey = new StringBuilder();
+        rowkey.append(rowKeyStr);
+        int rowKeyLen = rowkey.length();
+        if (rowkey.length() < 48){
+            for (int i = 0; i < 48 - rowKeyLen; i++){
+                rowkey.insert(rowKeyLen ,"0");
+            }
+        }
+        System.out.println("faceRowKey = " + rowkey.toString() + "  faceRowKey.length() = " + rowkey.length());
+        return rowkey.toString();
+    }
+
+    public static String faceKey(int faceNum,String key){
+        StringBuilder faceNumStr = new StringBuilder();
+        faceNumStr.append(faceNum);
+        String faceKeyStr = key.substring(0,key.length() - faceNumStr.length() - 1);
+        StringBuilder faceKey = new StringBuilder();
+        faceKey.append(faceKeyStr).append("_").append(faceNum);
+        System.out.println("faceKey = " + faceKey.toString() + "  faceKey.length() = " + faceKey.length());
+        return faceKey.toString();
+    }
     public static String transformNameToKey(String fileName) {
-        StringBuilder finalKey = new StringBuilder("");
-        StringBuilder key = new StringBuilder("");
-        String tempKey;
-        if (null != fileName && fileName.length() > 0) {
-            tempKey = fileName.substring(0, fileName.lastIndexOf("_"));
+        StringBuilder key = new StringBuilder();
+
+        if(null != fileName && fileName.length() >0){
+            String ipcID = fileName.substring(1,fileName.lastIndexOf("/"));
+            String tempKey = fileName.substring(fileName.lastIndexOf("/"), fileName.lastIndexOf("_")).replace("/","");
             String prefixName = tempKey.substring(tempKey.lastIndexOf("_") + 1, tempKey.length());
             String timeName = tempKey.substring(0, tempKey.lastIndexOf("_")).replace("_", "");
-            key = key.append(prefixName).reverse();
-            if (prefixName.length() < 10) {
-                for (int i = 0; i < 10 - prefixName.length(); i++) {
-                    key.insert(0, "0");
+
+            key = key.append(ipcID).append("_").append(timeName).append("_");
+            StringBuffer prefixNameKey = new StringBuffer();
+            prefixNameKey = prefixNameKey.append(prefixName).reverse();
+            if (prefixName.length() < 10){
+                for (int i = 0; i < 10 - prefixName.length(); i++){
+                    prefixNameKey.insert(0,"0");
                 }
-                key.append(timeName);
-            } else {
-                key.append(timeName);
+                key.append(prefixNameKey).append("_");
+            }else {
+                key.append(prefixName).append("_");
             }
-        } else {
+
+            if (key.length() < 48){
+                StringBuffer stringBuffer = new StringBuffer();
+                for (int i = 0; i < 48 - key.length(); i++){
+                    stringBuffer.insert(0,"0");
+                }
+                key.append(stringBuffer);
+            }
+        }else {
             key.append(fileName);
         }
+        System.out.println("key = " + key + " key.length() = " + key.length());
         return key.toString();
     }
 }

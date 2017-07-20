@@ -1,5 +1,6 @@
 package com.hzgc.ftpserver.kafka.consumer;
 
+import com.hzgc.ftpserver.util.Utils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
@@ -51,11 +52,21 @@ public class WorkerThread implements Runnable {
                 consumerRecord = buffer.take();
                 picTable = hbaseConn.getTable(TableName.valueOf(tableName));
                 if (null != columnFamily && null != column && null != consumerRecord) {
-                    Put put = new Put(Bytes.toBytes(consumerRecord.key()));
-                    put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column),consumerRecord.value());
-                    picTable.put(put);
-                    System.out.printf(Thread.currentThread().getName() + "topic = %s, offset = %d, key = %s, value = %s, patition = %s\n",
-                            consumerRecord.topic(), consumerRecord.offset(), consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    if (columnFamily.equals("FaceImage")){
+                        String faceRowKey = Utils.faceRowKey(consumerRecord.key());
+                        System.out.println("faceRowKey = " + faceRowKey);
+                        Put put = new Put(Bytes.toBytes(Utils.faceRowKey(consumerRecord.key())));
+                        put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(Utils.faceNum(consumerRecord.key())),consumerRecord.value());
+                        picTable.put(put);
+                        System.out.printf(Thread.currentThread().getName() + "topic = %s, offset = %d, key = %s, value = %s, patition = %s\n",
+                                consumerRecord.topic(), consumerRecord.offset(), consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    }else{
+                        Put put = new Put(Bytes.toBytes(consumerRecord.key()));
+                        put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column),consumerRecord.value());
+                        picTable.put(put);
+                        System.out.printf(Thread.currentThread().getName() + "topic = %s, offset = %d, key = %s, value = %s, patition = %s\n",
+                                consumerRecord.topic(), consumerRecord.offset(), consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    }
                 }
             }
         } catch (Exception e) {

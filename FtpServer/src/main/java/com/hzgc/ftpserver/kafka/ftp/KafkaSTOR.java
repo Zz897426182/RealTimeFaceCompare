@@ -113,12 +113,12 @@ public class KafkaSTOR extends AbstractCommand {
                 long transSz;
                 //parsing JSON files
                 if (file.getName().contains(".json")) {
-                    key = Utils.transformNameToKey(file.getName());
+                    key = Utils.transformNameToKey(fileName);
                     LOG.info("Kafka Producer Send message[" + file.getName() + "] to Kafka");
                     kafkaProducer.sendKafkaMessage(kafkaProducer.getJson(), key, value.toByteArray());
                     transSz = value.toByteArray().length;
                 } else if (fileName.contains(".jpg")) {
-                    key = Utils.transformNameToKey(file.getName());
+                    key = Utils.transformNameToKey(fileName);
                     //it is picture
                     if (Utils.pickPicture(fileName) == 0) {
                         LOG.info("Kafka Producer Send message[" + file.getName() + "] to Kafka");
@@ -126,7 +126,7 @@ public class KafkaSTOR extends AbstractCommand {
                         transSz = value.toByteArray().length;
                     } else if (Utils.pickPicture(fileName) > 0) {
                         LOG.info("Kafka Producer Send message[" + file.getName() + "] to Kafka");
-                        kafkaProducer.sendKafkaMessage(kafkaProducer.getFace(), key, value.toByteArray());
+                        kafkaProducer.sendKafkaMessage(kafkaProducer.getFace(), Utils.faceKey(Utils.pickPicture(fileName), key), value.toByteArray());
                         transSz = value.toByteArray().length;
                     } else {
                         LOG.info("Contains illegal file[" + file.getName()  + "], write to local default");
