@@ -8,6 +8,7 @@ public class ObjectInfo {
     private String idcard; // 身份证
     private byte sex;   // 性别
     private byte[] photo;  // 照片
+    private String feature; // 特征值
     private String reason;  // 理由
     private String pkey;   // 人员类型key
     private String tag;    //  是人还是车
@@ -20,13 +21,14 @@ public class ObjectInfo {
     }
 
     public ObjectInfo(String id, String name, String idcard, byte sex,
-                      byte[] photo, String reason, String pkey, String tag,
+                      byte[] photo, String feature, String reason, String pkey, String tag,
                       String createtime, String updatetime, String creator, String cphone) {
         this.id = id;
         this.name = name;
         this.idcard = idcard;
         this.sex = sex;
         this.photo = photo;
+        this.feature = feature;
         this.reason = reason;
         this.pkey = pkey;
         this.tag = tag;
@@ -34,6 +36,14 @@ public class ObjectInfo {
         this.updatetime = updatetime;
         this.creator = creator;
         this.cphone = cphone;
+    }
+
+    public String getFeature() {
+        return feature;
+    }
+
+    public void setFeature(String feature) {
+        this.feature = feature;
     }
 
     public String getId() {
@@ -140,6 +150,7 @@ public class ObjectInfo {
                 ", idcard='" + idcard + '\'' +
                 ", sex=" + sex +
                 ", photo=" + Arrays.toString(photo) +
+                ", feature=" + feature +
                 ", reason='" + reason + '\'' +
                 ", pkey='" + pkey + '\'' +
                 ", tag='" + tag + '\'' +

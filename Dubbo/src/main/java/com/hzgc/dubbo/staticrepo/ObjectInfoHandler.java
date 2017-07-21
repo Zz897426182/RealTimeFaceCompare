@@ -3,6 +3,9 @@ package com.hzgc.dubbo.staticrepo;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 处理针对静态信息库的增删改查操作
+ */
 public interface ObjectInfoHandler {
 
     /**
@@ -38,7 +41,8 @@ public interface ObjectInfoHandler {
      * @param image  传过来的图片
      * @param threshold  图片比对的阈值
      * @param pkeys 人员类型列表
-     * @param rowClomn 一些列的KV 对，即查找的条件
+     * @param creator 布控人员
+     * @param cphone 布控人手机号
      * @param start 需要返回的起始行
      * @param pageSize 需要返回的每页的大小
      * @param serachId 搜索Id
@@ -53,7 +57,7 @@ public interface ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(String platformId, String idCard,
                                             String rowkey, byte[] image,
                                             int threshold, List<String> pkeys,
-                                            Map<String, String> rowClomn,
+                                            String creator, String cphone,
                                             long start, long pageSize,
                                             int serachId, String serachType,
                                             boolean moHuSearch);
@@ -130,7 +134,14 @@ public interface ObjectInfoHandler {
      * @param photo  照片byte 数组
      * @return  照片的特征值
      */
-    public String getEigenValue(String tag, byte[] photo);
+    public String getFeature(String tag, byte[] photo);
+
+    /**
+     * 根据rowkey 返回人员的照片
+     * @param rowkey 人员在对象信息库中的唯一标志。
+     * @return 图片的byte[] 数组
+     */
+    public byte getPhotoByKey(String rowkey);
 
 
 
