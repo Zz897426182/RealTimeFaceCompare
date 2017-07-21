@@ -69,7 +69,7 @@ public class HBaseHelper {
 
     public  Table crateTableWithCoprocessor(String tableName, String observerName, String path,
                                           Map<String, String> mapOfOberserverArgs,
-                                          int maxVersion, String... colfams){
+                                          int maxVersion, Integer timeToLive, String... colfams){
         HTableDescriptor tableDescriptor = null;
         Admin admin = null;
         Table table = null;
@@ -84,6 +84,7 @@ public class HBaseHelper {
             for (String columnFamily:colfams){
                 HColumnDescriptor columnDescriptor = new HColumnDescriptor(columnFamily);
                 columnDescriptor.setMaxVersions(maxVersion);
+                columnDescriptor.setTimeToLive(timeToLive);
                 tableDescriptor.addFamily(columnDescriptor);
             }
             admin.createTable(tableDescriptor);

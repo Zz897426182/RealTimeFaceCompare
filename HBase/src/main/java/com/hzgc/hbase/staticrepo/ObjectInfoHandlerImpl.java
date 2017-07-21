@@ -142,8 +142,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-//            result.getValue(Bytes.toBytes("person"))
         }
 
         // 判断是否有修改照片
@@ -157,8 +155,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
     @Override
     public ObjectSearchResult getObjectInfo(String platformId, String idCard,
                                             String rowkey, byte[] image, int threshold,
-                                            List<String> pkeys, Map<String, String> rowClomn,
-                                            long start, long pageSize, int serachId,
+                                            List<String> pkeys, String creator, String cphone,
+                                            long start, long pageSize,
+                                            int serachId,
                                             String serachType, boolean moHuSearch) {
         return null;
     }
@@ -199,8 +198,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
     }
 
     @Override
-    public String getEigenValue(String tag, byte[] photo) {
+    public String getFeature(String tag, byte[] photo) {
         return null;
+    }
+
+    @Override
+    public byte getPhotoByKey(String rowkey) {
+        return 0;
     }
 
 

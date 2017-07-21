@@ -37,8 +37,10 @@ public class HBase2EsSuite {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Table table = helper.crateTableWithCoprocessor("ObjectInfo", "com.hzgc.hbase2es.HBase2EsObserver",
-                "hdfs:///user/ldl/hbase2es-1.0-jar-with-dependencies.jar", mapOfOberserverArgs, 3, "pcl");
+        Table table = helper.crateTableWithCoprocessor("ObjectInfo",
+                "com.hzgc.hbase2es.HBase2EsObserver",
+                "hdfs:///user/ldl/hbase2es-1.0-jar-with-dependencies.jar",
+                mapOfOberserverArgs, 3, null,"pcl");
         try {
             HBaseHelper.getHBaseConnection().close();
         } catch (IOException e) {
