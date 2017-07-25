@@ -141,7 +141,7 @@ public interface ObjectInfoHandler {
      * @param rowkey 人员在对象信息库中的唯一标志。
      * @return 图片的byte[] 数组
      */
-    public byte getPhotoByKey(String rowkey);
+    public byte[] getPhotoByKey(String rowkey);
 
 
 

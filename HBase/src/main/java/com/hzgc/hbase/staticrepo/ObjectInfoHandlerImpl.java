@@ -9,9 +9,10 @@ import org.apache.hadoop.hbase.util.Bytes;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
-
+    private static Logger logger = Logger.getLogger(String.valueOf(ObjectInfoHandlerImpl.class));
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> person) {
         // 或者所有的字段fieldset，转化为List 列表的fieldlist 方便后续处理
@@ -21,24 +22,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
         while (it.hasNext()){
             fieldlist.add(it.next());
         }
-
-        String idcard = "";
-        String pkey = "";
-        // 判断身份证号是否为空，如果为空，则补全成18位字母形式的内容，用来瓶装rowkey 用。
-        if (!fieldlist.contains("idcard") || person.get("idcard") == null ){
-            idcard = StaticRepoUtil.getIdCardByRandom();
-        } else {
-            idcard = (String) person.get("idcard");
-        }
-        // 判断人员类型是否为空
-        if (!fieldlist.contains("pkey")  || person.get("pkey") == null){
-            pkey = StaticRepoUtil.getPkeyByRandom();
-        } else {
-            pkey = (String) person.get("pkey");
-        }
-
         // 拼装rowkey
-        String rowkey = idcard + pkey;
+        String rowkey = UUID.randomUUID().toString();
 
         // 获取table 对象，通过封装HBaseHelper 来获取
         HBaseHelper helper = new HBaseHelper();
@@ -51,9 +36,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
         // 添加列族属性
         for (String field:fieldlist){
             if ("photo".equals(field)){
-                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes(field), (byte[])person.get(field));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes(field),
+                        (byte[])person.get(field));
             } else {
-                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes(field), Bytes.toBytes((String) person.get(field)));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes(field),
+                        Bytes.toBytes((String) person.get(field)));
             }
         }
 
@@ -67,7 +54,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
 
 
         Put putOfFeature = new Put(Bytes.toBytes(rowkey));
-        put.addColumn(Bytes.toBytes("feature"),Bytes.toBytes("feature"), (byte[]) person.get("feature"));
+        put.addColumn(Bytes.toBytes("feature"),Bytes.toBytes("feature"),
+                (byte[]) person.get("feature"));
 
         // 执行Put 操作，往表格里面添加一行数据
         try {
@@ -85,7 +73,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        //    helper.close();
         }
     }
 
@@ -120,35 +107,48 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
     }
 
     @Override
-    public int updateObjectInfo(Map<String, Object> person) {
+    public int updateObjectInfo(Map<String, Object> person)  {
         // 获取table 对象，通过封装HBaseHelper 来获取,先修改，然后把身份证
         HBaseHelper helper = new HBaseHelper();
         Table table = helper.getTable("objectinfo");
+        Table tablefeature = helper.getTable("feature");
+        String id = (String) person.get("id");
 
         // 解析穿过来的person对象,把获取字段名字。
         Set<String> fieldset = person.keySet();
         Iterator<String> it = fieldset.iterator();
         List<String> fieldlist = new ArrayList<String>();
-        while (it.hasNext()){
+        while (it.hasNext()) {
             fieldlist.add(it.next());
         }
 
-        // 判断是否会修改身份证号
-        if (fieldlist.contains("idcard") && person.get("idcard") != null){
-            Get get = new Get(Bytes.toBytes((String) person.get("id")));
-            Result result = null;
+        Put put = new Put(Bytes.toBytes(id));
+        for (String field : fieldlist) {
+            put.addColumn(Bytes.toBytes("person"), Bytes.toBytes(field), (byte[]) person.get(field));
+        }
+        try {
+            table.put(put);
+            // 判断是否有修改照片
+            Put put1 = new Put(Bytes.toBytes(id));
+            if(fieldlist.contains("photo") && person.get("photo") != null) {
+                put1.addColumn(Bytes.toBytes("feature"), Bytes.toBytes("feature"),
+                        (byte[]) person.get("feature"));
+            }
+            if (fieldlist.contains("pkey") && person.get("pkey") != null) {
+                put1.addColumn(Bytes.toBytes("feature"), Bytes.toBytes("pkey"),
+                        (byte[]) person.get("pkey"));
+            }
+            tablefeature.put(put1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
             try {
-                 result = table.get(get);
+                table.close();
+                tablefeature.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        // 判断是否有修改照片
-        if (fieldlist.contains("photo") && person.get("photo") != null){
-
-        }
-
         return 0;
     }
 
@@ -203,8 +203,23 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler{
     }
 
     @Override
-    public byte getPhotoByKey(String rowkey) {
-        return 0;
+    public byte[] getPhotoByKey(String rowkey) {
+        HBaseHelper helper = new HBaseHelper();
+        Table table = helper.getTable("objectinfo");
+        Scan scan = new Scan(Bytes.toBytes(rowkey));
+        ResultScanner rs = null;
+        try {
+            rs = table.getScanner(scan);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Iterator<Result> it = rs.iterator();
+        byte[] photo = null;
+        while (it.hasNext()){
+            Result r = it.next();
+            photo = r.getValue(Bytes.toBytes("person"),Bytes.toBytes("photo"));
+        }
+        return photo;
     }
 
 
