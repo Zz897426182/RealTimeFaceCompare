@@ -32,6 +32,16 @@
             <artifactId>dubbo</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.hzgc</groupId>
+            <artifactId>jni</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hzgc</groupId>
+            <artifactId>ftp</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -33,6 +33,11 @@ public class CapturedPicture {
      */
     private byte[] image;
 
+    /**
+     * 时间戳
+     */
+    private long timeStamp;
+
     public String getId() {
         return id;
     }
@@ -81,6 +86,14 @@ public class CapturedPicture {
         this.image = image;
     }
 
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
     @Override
     public String toString() {
         return "CapturedPicture{" +
@@ -90,6 +103,7 @@ public class CapturedPicture {
                 ", similarity=" + similarity +
                 ", extend=" + extend +
                 ", image=" + Arrays.toString(image) +
+                ", timeStamp=" + timeStamp +
                 '}';
     }
 }

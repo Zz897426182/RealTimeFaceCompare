@@ -2,10 +2,14 @@ package com.hzgc.dubbo.dynamicrepo;
 
 
 public interface DynamicPhotoService {
+
     /**
-     * 获取动态图片信息（外）to 陆春峰（刘善彬）
-     * @param DynamicPhotoID 动态图片ID
-     * @return 动态图片的具体信息（大图、小图等等）
+     * 将rowKey、特征值插入人脸/车辆特征库 （内）（刘思阳）
+     *
+     * @param type  图片类型（判断是车是人）
+     * @param rowKey  图片id
+     * @param feature 特征值
+     * @return boolean 是否插入成功
      */
-    public PersonPhoto getDynamicPhotoInfo(String DynamicPhotoID);
+    public boolean insertePictureFeature(PictureType type, String rowKey, float[] feature);
 }

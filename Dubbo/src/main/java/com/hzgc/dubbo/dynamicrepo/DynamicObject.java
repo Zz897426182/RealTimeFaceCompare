@@ -1,7 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 
-public class PersonPhoto {
+public class DynamicObject {
     /**
      * 动态人脸照片ID
      */
@@ -11,15 +11,11 @@ public class PersonPhoto {
      * 抓取照片的设备ID
      */
     private String ipc;
-    /**
-     * 人脸大图数据
-     */
-    private byte[] bigImage;
 
     /**
-     * 人脸小图数据
+     * 图片信息
      */
-    private byte[] smallImage;
+    private byte[] image;
 
     /**
      * 图片描述信息
@@ -31,6 +27,10 @@ public class PersonPhoto {
      */
     private String ex;
 
+    /**
+     * 时间戳
+     */
+    private long timeStamp;
 
     public String getImageId() {
         return imageId;
@@ -48,20 +48,12 @@ public class PersonPhoto {
         this.ipc = ipc;
     }
 
-    public byte[] getBigImage() {
-        return bigImage;
+    public byte[] getImage() {
+        return image;
     }
 
-    public void setBigImage(byte[] bigImage) {
-        this.bigImage = bigImage;
-    }
-
-    public byte[] getSmallImage() {
-        return smallImage;
-    }
-
-    public void setSmallImage(byte[] smallImage) {
-        this.smallImage = smallImage;
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 
     public String getDes() {
@@ -78,5 +70,13 @@ public class PersonPhoto {
 
     public void setEx(String ex) {
         this.ex = ex;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }
