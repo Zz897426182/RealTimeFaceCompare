@@ -33,20 +33,20 @@ public interface CapturePictureSearchService {
     Map<String, String> getSearchFilterParams(int type);
 
     /**
-     * 根据id（rowkey）获取原图
+     * 根据id（rowkey）获取原图 （刘思阳）
      *
      * @param imageId rowkey
-     * @param type    图片类型，人还是车
+     * @param type    图片类型，人/车
      * @return 以二进制数组的形式返回图片
      */
     byte[] getPicture(String imageId, PictureType type);
 
     /**
-     * 根据id（rowkey）获取PersonPhoto对象
+     * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *
-     * @param imageId   rowkey
-     * @param type  图片类型，人还是车
-     * @return  DynamicObject对象
+     * @param imageId id（rowkey）
+     * @param type    图片类型，人/车
+     * @return DynamicObject    动态库对象
      */
     public DynamicObject getCaptureMessage(String imageId, int type);
 }

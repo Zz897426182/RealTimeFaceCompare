@@ -4,6 +4,7 @@ package com.hzgc.hbase.dynamicrepo;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.HBaseHelper;
+import com.hzgc.hbase.util.HBaseUtil;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
@@ -16,7 +17,7 @@ import java.util.Map;
  * 以图搜图接口实现类，内含四个方法（外）（彭聪）
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
-    private static Logger LOGGER = Logger.getLogger(CapturePictureSearchServiceImpl.class);
+    private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
 
     @Override
     public SearchResult search(SearchOption option) {
@@ -44,45 +45,55 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
-     * 根据id（rowkey）获取原图
+     * 根据id（rowkey）获取原图 （刘思阳）
      *
      * @param imageId rowkey
-     * @param type    图片类型，人还是车
+     * @param type    图片类型，人/车
      * @return 以二进制数组的形式返回图片
      */
     @Override
     public byte[] getPicture(String imageId, PictureType type) {
         byte[] picture = null;
-
-        try {
-            if (null != imageId && type.getType() == 0) {
-                Table person = HBaseHelper.getTable("person");
+        if (null != imageId && type == PictureType.PERSON) {
+            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERFEA);
+            try {
                 Get get = new Get(Bytes.toBytes(imageId));
                 Result result = person.get(get);
-                picture = result.getValue(Bytes.toBytes("i"), Bytes.toBytes("p"));
-            } else if (null != imageId && type.getType() == 1) {
-                Table person = HBaseHelper.getTable("car");
-                Get get = new Get(Bytes.toBytes(imageId));
-                Result result = person.get(get);
-                picture = result.getValue(Bytes.toBytes("i"), Bytes.toBytes("p"));
+                picture = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                HBaseUtil.closTable(person);
+                LOG.error("get picture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getPicture.");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else if (null != imageId && type == PictureType.CAR) {
+            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+            try {
+                Get get = new Get(Bytes.toBytes(imageId));
+                Result result = car.get(get);
+                picture = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
+            } catch (IOException e) {
+                e.printStackTrace();
+                LOG.error("get picture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getPicture.");
+            } finally {
+                HBaseUtil.closTable(car);
+            }
+        } else {
+            LOG.error("method CapturePictureSearchServiceImpl.getPicture param is empty.");
         }
-
         return picture;
     }
 
     /**
-     * 根据id（rowkey）获取动态信息库内容（PersonPhoto对象）
+     * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *
-     * @param imageId rowkey
-     * @param type    图片类型，人还是车
-     * @return DynamicObject对象
+     * @param imageId id（rowkey）
+     * @param type    图片类型，人/车
+     * @return DynamicObject    动态库对象
      */
     @Override
     public DynamicObject getCaptureMessage(String imageId, int type) {
-        DynamicObject dynamicObject  = new DynamicObject();
+        DynamicObject dynamicObject = new DynamicObject();
         dynamicObject.setImageId(imageId);
 
         Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
@@ -92,39 +103,50 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         dynamicObject.setIpc(ipcID);
         dynamicObject.setTimeStamp(Long.valueOf(timeStampStr));
 
-        if (null != imageId && type == 0 || type == 1) {
-            try {
-                if (type == 0) {
-                    Table person = HBaseHelper.getTable("person");
+        if (null != imageId && PictureType.PERSON.equals(type) || PictureType.CAR.equals(type)) {
+            if (PictureType.PERSON.equals(type)) {
+                Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERFEA);
+                try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = person.get(get);
 
-                    byte[] image = result.getValue(Bytes.toBytes("i"), Bytes.toBytes("p"));
+                    byte[] image = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
                     dynamicObject.setImage(image);
 
-                    String des = Bytes.toString(result.getValue(Bytes.toBytes("i"), Bytes.toBytes("d")));
+                    String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
                     dynamicObject.setDes(des);
 
-                    String ex = Bytes.toString(result.getValue(Bytes.toBytes("i"), Bytes.toBytes("e")));
+                    String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
                     dynamicObject.setEx(ex);
-
-                } else if (type == 1) {
-                    Table person = HBaseHelper.getTable("car");
-                    Get get = new Get(Bytes.toBytes(imageId));
-                    Result result = person.get(get);
-
-                    byte[] image = result.getValue(Bytes.toBytes("i"), Bytes.toBytes("p"));
-                    dynamicObject.setImage(image);
-
-                    String des = Bytes.toString(result.getValue(Bytes.toBytes("i"), Bytes.toBytes("d")));
-                    dynamicObject.setDes(des);
-
-                    String ex = Bytes.toString(result.getValue(Bytes.toBytes("i"), Bytes.toBytes("e")));
-                    dynamicObject.setEx(ex);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    LOG.error("get DynamicObject by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.");
+                } finally {
+                    HBaseUtil.closTable(person);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } else if (PictureType.CAR.equals(type)) {
+                Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+                try {
+                    Get get = new Get(Bytes.toBytes(imageId));
+                    Result result = car.get(get);
+
+                    byte[] image = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
+                    dynamicObject.setImage(image);
+
+                    String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
+                    dynamicObject.setDes(des);
+
+                    String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
+                    dynamicObject.setEx(ex);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    LOG.error("get DynamicObject by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.");
+                } finally {
+                    HBaseUtil.closTable(car);
+                }
             }
+        } else {
+            LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage param is empty.");
         }
         return dynamicObject;
     }
