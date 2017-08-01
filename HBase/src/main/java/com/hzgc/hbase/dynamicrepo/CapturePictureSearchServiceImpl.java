@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 以图搜图接口实现类，内含五个方法（外）（彭聪）
+ * 以图搜图接口实现类，内含四个方法（外）（彭聪）
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
@@ -104,7 +104,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         } catch (IOException e) {
             e.printStackTrace();
             LOG.error("get SearchResult Object by searchId from table_searchres failed! used method CapturePictureSearchServiceImpl.getSearchResult.");
-        }finally {
+        } finally {
             HBaseUtil.closTable(searchResTable);
             HBaseUtil.closTable(personTable);
         }
@@ -131,7 +131,40 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public CapturedPicture getCaptureMessage(String imageId, int type) {
-        boolean param = PictureType.PERSON.equals(type) || PictureType.CAR.equals(type) || PictureType.PERSON.equals(type) || PictureType.BIG_PERSON.equals(type) || PictureType.BIG_CAR.equals(type);
+        boolean param = false;
+        switch (type) {
+            case 0:
+                if (PictureType.PERSON.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 1:
+                if (PictureType.CAR.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 2:
+                if (PictureType.SMALL_PERSON.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 3:
+                if (PictureType.SMALL_CAR.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 4:
+                if (PictureType.BIG_PERSON.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 5:
+                if (PictureType.BIG_CAR.getType() == type) {
+                    param = true;
+                }
+                break;
+        }
+
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId && param) {
             capturedPicture.setId(imageId);
@@ -150,7 +183,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             StringBuilder bigImageRowKey = new StringBuilder();
             bigImageRowKey.append(rowKey).append("_").append("00");
 
-            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERFEA);
+            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
 
             Map<String, Object> mapEx = new HashMap<>();
@@ -274,7 +307,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     private CapturedPicture setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
-        byte[] bigImage = bigImageResult.getValue(DynamicTable.PERFEA_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+        byte[] bigImage = bigImageResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
         capturedPicture.setBigImage(bigImage);
         return capturedPicture;
     }
