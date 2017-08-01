@@ -55,6 +55,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             } finally {
                 HBaseUtil.closTable(carFeature);
             }
+        }else{
+            LOG.error("method DynamicPhotoServiceImpl.insertePictureFeature param is empty.");
         }
         return false;
     }
