@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class SearchOption implements Serializable {
     /**
-     * 搜索类型，PERSON（人）,CAR（车）
+     * 搜索类型，人PERSON（0）,车CAR（1）
      */
     private SearchType searchType;
     /**
@@ -46,7 +46,7 @@ public class SearchOption implements Serializable {
      */
     private Date endDate;
     /**
-     * 搜索的时间区间，为空搜索整天
+     * 搜索的时间区间，为空或者没有传入这个参数时候搜索整天
      */
     private List<TimeInterval> intervals;
     /**

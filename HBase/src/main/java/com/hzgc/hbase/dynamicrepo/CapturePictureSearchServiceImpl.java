@@ -62,10 +62,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         Get get = new Get(Bytes.toBytes(searchId));
         Result result = null;
         try {
-            searchResult.setFinished(true);
             result = searchResTable.get(get);
             String searchImageID = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID));
-            searchResult.setImageId(searchImageID);
 
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
             Map<String, Float> searchMessageMap = new HashMap<>();

@@ -46,6 +46,16 @@
             <artifactId>jni</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.hzgc</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <!--<dependency>
+            <groupId>com.hzgc</groupId>
+            <artifactId>streaming</artifactId>
+            <version>1.0</version>
+        </dependency>-->
     </dependencies>
 
     <build>

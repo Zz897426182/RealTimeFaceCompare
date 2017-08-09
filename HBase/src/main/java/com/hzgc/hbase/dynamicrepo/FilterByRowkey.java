@@ -78,7 +78,6 @@ public class FilterByRowkey {
         return getSearchResponse(searchRequestBuilder);
     }
 
-
     /**
      * 根据车牌号过滤rowKey范围
      *
@@ -91,14 +90,14 @@ public class FilterByRowkey {
 
         if (option.getPlateNumber() == null) {
             String plateNumber = option.getPlateNumber();
-            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CARFEA);
+            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
             try {
                 ResultScanner scanner = car.getScanner(scan);
                 Map<String, String> map = new HashMap<>();
                 for (Result result : scanner) {
                     byte[] rowKey = result.getRow();
                     String rowKeyStr = Bytes.toString(rowKey);
-                    byte[] plateNum = result.getValue(DynamicTable.CARFEA_COLUMNFAMILY, DynamicTable.CARFEA_COLUMN_PLATNUM);
+                    byte[] plateNum = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM);
                     String plateNumStr = Bytes.toString(plateNum);
                     if (rowKey != null && rowKey.length > 0 && plateNumStr != null && plateNumStr.length() > 0) {
                         map.put(rowKeyStr, plateNumStr);
@@ -126,9 +125,6 @@ public class FilterByRowkey {
         }
         return rowKeyList;
     }
-
-
-
 
     public List<String> filterByDate(List<String> rowKeyList, String startDate, String endDate, Scan scan, Table table) {
         int start = Integer.parseInt(startDate);

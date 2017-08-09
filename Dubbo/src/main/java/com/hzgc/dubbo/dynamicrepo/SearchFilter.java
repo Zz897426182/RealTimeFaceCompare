@@ -22,7 +22,7 @@ public class SearchFilter implements Serializable {
     /**
      * 搜索条件的拼接运算,默认为OR操作
      */
-    public enum SearchOperation{
+    public enum SearchOperation {
         AND,
         OR
     }
