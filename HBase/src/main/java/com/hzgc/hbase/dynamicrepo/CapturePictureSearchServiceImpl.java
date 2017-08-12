@@ -4,12 +4,11 @@ import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.kafka.dynamicrepo.KafkaObjectProducer;
 import com.hzgc.util.ObjectUtil;
-import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.filter.CompareFilter;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.RegexStringComparator;
-import org.apache.hadoop.hbase.filter.RowFilter;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
@@ -31,15 +30,18 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public SearchResult search(SearchOption option) {
-        Scan scan = new Scan();
+        KafkaObjectProducer objectProducer = new KafkaObjectProducer();
+        objectProducer.kafkaObjectProducer(option);
+        SearchResult searchResult = new SearchResult();
+       /* Scan scan = new Scan();
         if (null != option) {
             if (!option.getDeviceIds().isEmpty() && null != option.getSearchType()) {
-           //     List<String> rowKeyListByDeviceId = new FilterByRowkey().filterByDeviceId(option, scan);
+                // List<String> rowKeyListByDeviceId = new FilterByRowkey().filterByDeviceId(option, scan);
 
             } else if (option.getPlateNumber() != null && option.getSearchType() == SearchType.CAR) {
                 List<String> rowKeyListByPlateNumber = new FilterByRowkey().filterByPlateNumber(option, scan);
             }
-        }
+        }*/
 
         return null;
     }
@@ -51,7 +53,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return SearchResult对象
      */
     @Override
-    public SearchResult getSearchResult(String searchId, int offset, int count) {
+    public SearchResult getSearchResult(String searchId, int offset, int count, String sortParams) {
         Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
         Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
 

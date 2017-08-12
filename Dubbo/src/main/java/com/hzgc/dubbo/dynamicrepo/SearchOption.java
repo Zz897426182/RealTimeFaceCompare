@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 搜索选项
@@ -57,7 +56,7 @@ public class SearchOption implements Serializable {
     /**
      * 排序参数
      */
-    private Map<String, String> sortParams;
+    private String sortParams;
 
     public SearchType getSearchType() {
         return searchType;
@@ -151,11 +150,11 @@ public class SearchOption implements Serializable {
         // 初始化搜索日期
     }
 
-    public Map<String, String> getSortParams() {
+    public String getSortParams() {
         return sortParams;
     }
 
-    public void setSortParams(Map<String, String> sortParams) {
+    public void setSortParams(String sortParams) {
         this.sortParams = sortParams;
     }
 

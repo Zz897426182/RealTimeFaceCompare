@@ -228,6 +228,7 @@ public class FaceFunction {
      * @throws Exception
      */
     public static float[] byteArr2floatArr(byte[] fea) throws Exception {
-        return FaceFunction.string2floatArray(new String(fea, "ISO-8859-1"));
+        float[] newFea = FaceFunction.string2floatArray(new String(fea, "ISO-8859-1"));
+        return newFea;
     }
 }

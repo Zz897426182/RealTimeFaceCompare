@@ -213,5 +213,4 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         return searchMessageMap;
     }
 
-
 }

@@ -54,7 +54,7 @@ public interface DynamicPhotoService {
      * 表名：searchRes
      *
      * @param searchID 查询ID（rowKey）
-     * @return Map<String,Float> search结果数据列表
+     * @return search结果数据列表
      */
     public Map<String, Float> getSearchRes(String searchID);
 }

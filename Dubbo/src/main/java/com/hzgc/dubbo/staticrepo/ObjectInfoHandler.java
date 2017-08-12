@@ -64,6 +64,8 @@ public interface ObjectInfoHandler {
     /**
      * 根据布控人手机号进行查询  （外）
      * @param cphone 布控人手机号
+     * @param start  返回的查询记录中，从哪一条开始
+     * @param pageSize  需要返回的记录数
      * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
     public ObjectSearchResult searchByCphone(String cphone, int start, int pageSize);

@@ -8,6 +8,8 @@ public interface SearchRecordHandler {
     /**
      * 根据传过来的搜索rowkey 返回搜索记录 （外） （李第亮）
      * @param rowkey，即Hbase 数据库中的rowkey，查询记录唯一标志
+     * @param from  返回的查询记录中，从哪一条开始
+     * @param size  需要返回的记录数
      * @return  返回一个ObjectSearchResult 对象，
      * @author 李第亮
      * 里面包含了本次查询ID，查询成功标识，
