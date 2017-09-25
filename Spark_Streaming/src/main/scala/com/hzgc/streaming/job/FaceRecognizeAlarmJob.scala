@@ -120,6 +120,7 @@ object FaceRecognizeAlarmJob {
               result._1,
               gson.toJson(recognizeAlarmMessage).getBytes(),
               null)
+
           }
         })
       })

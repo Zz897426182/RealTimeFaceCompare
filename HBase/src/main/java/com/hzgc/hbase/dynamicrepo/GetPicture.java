@@ -13,6 +13,7 @@ import java.io.Serializable;
 
 
 public class GetPicture implements Serializable {
+
     private static Logger LOG = Logger.getLogger(GetPicture.class);
     public byte[] getCapture(String imageId) {
         if (null != imageId) {

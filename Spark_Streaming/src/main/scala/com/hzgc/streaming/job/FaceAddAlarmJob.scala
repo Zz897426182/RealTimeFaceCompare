@@ -92,6 +92,7 @@ object FaceAddAlarmJob {
           if (result._4 == null || result._4.isEmpty) {
             val flag = gp.getCapture(result._1)
             if (flag != null) {
+
               val dateStr = df.format(new Date())
               val addAlarmMessage = new AddAlarmMessage()
               addAlarmMessage.setAlarmTime(dateStr)
