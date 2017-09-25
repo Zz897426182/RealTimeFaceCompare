@@ -64,7 +64,7 @@ public interface DynamicPhotoService {
      * @param capturedPictureList 查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
-    boolean insertSearchRes(String searchId, List<CapturedPicture> capturedPictureList);
+    boolean insertSearchRes(String searchId, List<CapturedPicture> capturedPictureList, String insertType);
 
     /**
      * 根据动态库查询ID获取查询结果 （内）（刘思阳）
@@ -101,4 +101,21 @@ public interface DynamicPhotoService {
      * @return
      */
     List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type);
+
+    /**
+     * 返回多张图片数据流
+     *
+     * @param capturedPictures
+     * @param type
+     * @return
+     */
+    List<CapturedPicture> getFullImageData(List<CapturedPicture> capturedPictures, int type);
+
+    /**
+     * 返回单张图片数据流
+     *
+     * @param capturedPicture
+     * @return
+     */
+    CapturedPicture getImageData(CapturedPicture capturedPicture);
 }
