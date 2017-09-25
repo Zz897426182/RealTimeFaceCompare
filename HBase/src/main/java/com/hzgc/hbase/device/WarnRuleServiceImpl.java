@@ -173,7 +173,7 @@ public class WarnRuleServiceImpl implements WarnRuleService {
                 for (String ipc : ipcIDs) {
                     id = ipc;
                     Delete deviceDelete = new Delete(Bytes.toBytes(ipc));
-                    deviceDelete.addColumn(DeviceTable.CF_DEVICE, DeviceTable.WARN);
+                    deviceDelete.addColumns(DeviceTable.CF_DEVICE, DeviceTable.WARN);
                     deviceDelList.add(deviceDelete);
                     reply.put(ipc, true);
                     LOG.info("release the rule binding, the device ID is:" + ipc);
@@ -204,7 +204,7 @@ public class WarnRuleServiceImpl implements WarnRuleService {
                     }
                     if (tempMap.isEmpty()) {
                         Delete delete = new Delete(result.getRow());
-                        delete.addColumn(DeviceTable.CF_OBJTYPE, DeviceTable.OBJTYPE_COL);
+                        delete.addColumns(DeviceTable.CF_OBJTYPE, DeviceTable.OBJTYPE_COL);
                         objDelList.add(delete);
                     } else {
                         Put put = new Put(result.getRow());

@@ -68,10 +68,11 @@ public class FtpUtil implements Serializable {
 
     public static String transformNameToKey(String fileName) {
         StringBuilder key = new StringBuilder();
-
+        String newFileName = "";
         if (fileName != null && fileName.length() > 0) {
-            String ipcID = fileName.substring(1, fileName.indexOf("/", 2));
-            String tempKey = fileName.substring(fileName.lastIndexOf("/"), fileName.lastIndexOf("_")).replace("/", "");
+            newFileName = fileName.substring(11, fileName.length());
+            String ipcID = newFileName.substring(1, newFileName.indexOf("/", 2));
+            String tempKey = newFileName.substring(newFileName.lastIndexOf("/"), newFileName.lastIndexOf("_")).replace("/", "");
             String prefixName = tempKey.substring(tempKey.lastIndexOf("_") + 1, tempKey.length());
             String timeName = tempKey.substring(2, tempKey.lastIndexOf("_")).replace("_", "");
 
@@ -86,7 +87,7 @@ public class FtpUtil implements Serializable {
             }
             key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00");
         } else {
-            key.append(fileName);
+            key.append(newFileName);
         }
         return key.toString();
     }

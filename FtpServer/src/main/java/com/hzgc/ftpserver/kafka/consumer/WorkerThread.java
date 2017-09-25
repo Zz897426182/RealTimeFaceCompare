@@ -66,7 +66,8 @@ public class WorkerThread implements Runnable, Serializable {
                 picTable = hbaseConn.getTable(TableName.valueOf(tableName));
                 if (null != columnFamily && null != column_pic && null != consumerRecord) {
                     Put put = new Put(Bytes.toBytes(consumerRecord.key()));
-                    put.setDurability(Durability.SKIP_WAL);
+
+                    put.setDurability(Durability.SYNC_WAL);
                     put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_pic), consumerRecord.value());
                     Map<String, String> map = FtpUtil.getRowKeyMessage(consumerRecord.key());
                     String ipcID = map.get("ipcID");

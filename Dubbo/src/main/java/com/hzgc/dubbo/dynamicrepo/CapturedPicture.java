@@ -14,6 +14,10 @@ public class CapturedPicture implements Serializable {
      */
     private String id;
     /**
+     * 图片类型
+     */
+    private PictureType pictureType;
+    /**
      * 捕获照片的设备 id
      */
     private String ipcId;
@@ -24,7 +28,7 @@ public class CapturedPicture implements Serializable {
     /**
      * 图片的相似度
      */
-    private float similarity;
+    private Float similarity;
     /**
      * 图片的附加信息，扩展预留
      */
@@ -53,6 +57,14 @@ public class CapturedPicture implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public PictureType getPictureType() {
+        return pictureType;
+    }
+
+    public void setPictureType(PictureType pictureType) {
+        this.pictureType = pictureType;
     }
 
     public String getIpcId() {
@@ -123,6 +135,7 @@ public class CapturedPicture implements Serializable {
     public String toString() {
         return "CapturedPicture{" +
                 "id='" + id + '\'' +
+                ", pictureType=" + pictureType +
                 ", ipcId='" + ipcId + '\'' +
                 ", description='" + description + '\'' +
                 ", similarity=" + similarity +

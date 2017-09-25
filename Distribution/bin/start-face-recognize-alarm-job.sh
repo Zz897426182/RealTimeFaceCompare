@@ -127,7 +127,7 @@ if [ ! -e $LIB_DIR/streaming-1.0.jar ];then
     exit 0
 fi
 
-## 离线告警任务
+## 识别告警任务
 source /etc/profile
 source /opt/client/bigdata_env
 nohup spark-submit \

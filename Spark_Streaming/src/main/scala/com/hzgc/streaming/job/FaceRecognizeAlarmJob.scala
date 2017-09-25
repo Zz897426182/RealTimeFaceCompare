@@ -7,6 +7,7 @@ import java.util.Date
 import com.google.gson.Gson
 import com.hzgc.ftpserver.util.FtpUtil
 import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
+import com.hzgc.hbase.dynamicrepo.{CapturePictureSearchServiceImpl, GetPicture}
 import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.rocketmq.util.RocketMQProducer
@@ -31,6 +32,7 @@ object FaceRecognizeAlarmJob {
 
   def main(args: Array[String]): Unit = {
     val deviceUtilI = new DeviceUtilImpl()
+    val gp = new GetPicture()
     val properties = StreamingUtils.getProperties
     val appName = properties.getProperty("job.recognizeAlarm.appName")
     val master = properties.getProperty("job.recognizeAlarm.master")
@@ -97,25 +99,29 @@ object FaceRecognizeAlarmJob {
         val gson = new Gson()
         val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         parRDD.foreach(result => {
-          val recognizeAlarmMessage = new RecognizeAlarmMessage()
-          val items = new ArrayBuffer[Item]()
-          val dateStr = df.format(new Date())
-          recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
-          recognizeAlarmMessage.setDynamicDeviceID(result._2)
-          recognizeAlarmMessage.setDynamicID(result._1)
-          recognizeAlarmMessage.setAlarmTime(dateStr)
-          result._4.foreach(record => {
-            val item = new Item()
-            item.setSimilarity(record.sim.toString)
-            item.setStaticID(record.staticID)
-            items += item
-          })
-          recognizeAlarmMessage.setItems(items.toArray)
-          rocketMQProducer.send(result._3,
-            "alarm_" + DeviceTable.IDENTIFY.toString,
-            result._1,
-            gson.toJson(recognizeAlarmMessage).getBytes(),
-            null)
+          val flag = gp.getCapture(result._1)
+          if (flag != null) {
+            val recognizeAlarmMessage = new RecognizeAlarmMessage()
+            val items = new ArrayBuffer[Item]()
+            val dateStr = df.format(new Date())
+            recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
+            recognizeAlarmMessage.setDynamicDeviceID(result._2)
+            recognizeAlarmMessage.setDynamicID(result._1)
+            recognizeAlarmMessage.setAlarmTime(dateStr)
+            result._4.foreach(record => {
+              val item = new Item()
+              item.setSimilarity(record.sim.toString)
+              item.setStaticID(record.staticID)
+              items += item
+            })
+            recognizeAlarmMessage.setItems(items.toArray)
+            rocketMQProducer.send(result._3,
+              "alarm_" + DeviceTable.IDENTIFY.toString,
+              result._1,
+              gson.toJson(recognizeAlarmMessage).getBytes(),
+              null)
+
+          }
         })
       })
     })
