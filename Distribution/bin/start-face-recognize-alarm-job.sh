@@ -127,7 +127,7 @@ if [ ! -e $LIB_DIR/streaming-1.0.jar ];then
     exit 0
 fi
 
-## 离线告警任务
+## 识别告警任务
 source /etc/profile
 source /opt/client/bigdata_env
 nohup spark-submit \
@@ -151,6 +151,7 @@ $LIB_DIR/rocketmq-common-4.1.0-incubating.jar,\
 $LIB_DIR/rocketmq-remoting-4.1.0-incubating.jar,\
 $LIB_DIR/fastjson-1.2.29.jar,\
 $LIB_DIR/util-1.0.jar,\
+$LIB_DIR/bigdata-api-1.0.jar,\
 $LIB_DIR/kafka-clients-0.10.0.0.jar \
 --files $CONF_DIR/es-config.properties,\
 $CONF_DIR/sparkJob.properties,\
