@@ -68,7 +68,7 @@ public class WarnRuleServiceSuite {
         warnRule1.setThreshold(70);
         warnRule1.setObjectType("police");
         String ipcid = "hhh100";
-       // warnRuleService.addMembers(PutData.objType(),warnRule1,ipcid);
+        System.out.println(warnRule1);
     }
     @Test
     public void testParseOfflineWarn(){

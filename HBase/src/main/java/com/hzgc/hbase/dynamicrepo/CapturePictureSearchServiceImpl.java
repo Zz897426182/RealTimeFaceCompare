@@ -32,7 +32,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
-     * 接收应用层传递的参数进行搜图
+     * 接收应用层传递的参数进行搜图（彭聪）
      *
      * @param option 搜索选项
      * @return 搜索结果SearchResult对象
@@ -50,6 +50,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
+     * 获取查询结果
+     *
      * @param searchId 搜索的 id（rowkey）（刘思阳）
      * @param offset   从第几条开始
      * @param count    条数
@@ -270,7 +272,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
-     * 批量查询图片对象
+     * 批量查询图片对象（彭聪）
      *
      * @param imageIdList 图片ID列表
      * @param type        搜索类型
@@ -450,7 +452,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
-     * 排序分页
+     * 排序分页 （彭聪）
      *
      * @param capturedPictureList 图片对象列表
      * @param offset              起始值
@@ -458,12 +460,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 返回分页排序后的结果
      */
     private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count) {
-        //结果集（capturedPictureList）排序
         //SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
         SearchResult tempResult = new SearchResult();
         if (null != capturedPictureList && capturedPictureList.size() > 0) {
-           /* 保存记录时已经排好序，分页返回时不需要排序
-            ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());*/
+            ///保存记录时已经排好序，分页返回时不需要排序，如果需要对下一页采用新的排序方式可以解除注释第一行和下面一行代码
+            //ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
             List<CapturedPicture> subCapturePictureList;
             if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
                 //结束行小于总数
