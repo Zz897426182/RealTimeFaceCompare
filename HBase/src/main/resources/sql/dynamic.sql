@@ -69,3 +69,20 @@ create 'searchRes',
 {NAME => 'i', DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0', COMPRESSION =>
 'SNAPPY', VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
  IN_MEMORY => 'true', BLOCKCACHE => 'true',TTL=>'604800'}
+
+ ------------------------------------------------------------------------------------------------------------
+IPCID与ftpAddress映射关系
+-----------------------------------
+|             IPCID               |
+-----------------------------------
+|           |       CF：i         |
+-----------------------------------
+|   IPCID   |      ftpAddress     |
+-----------------------------------
+|   rowkey  |        a            |
+-----------------------------------
+
+create 'IPCID',
+{NAME => 'i', DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0', COMPRESSION =>
+'SNAPPY', VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
+ IN_MEMORY => 'true', BLOCKCACHE => 'true',TTL=>'604800'}
