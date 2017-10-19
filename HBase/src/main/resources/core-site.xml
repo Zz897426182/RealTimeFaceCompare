@@ -10,7 +10,7 @@
 </property>
 <property>
 <name>cas.conf.serverName.on</name>
-<value>https://172.18.18.103:20026/HDFS/NameNode/24</value>
+<value>https://172.18.18.109:20026/HDFS/NameNode/24</value>
 </property>
 <property>
 <name>hadoop.security.auth_to_local</name>
@@ -32,7 +32,7 @@ DEFAULT</value>
 </property>
 <property>
 <name>oi.dfs.colocation.zookeeper.quorum</name>
-<value>s105:24002,s104:24002,s103:24002</value>
+<value>s111:24002,s110:24002,s109:24002</value>
 </property>
 <property>
 <name>hadoop.proxyuser.HTTP.hosts</name>
@@ -88,7 +88,7 @@ DEFAULT</value>
 </property>
 <property>
 <name>ha.zookeeper.quorum</name>
-<value>s105:24002,s104:24002,s103:24002</value>
+<value>s111:24002,s110:24002,s109:24002</value>
 </property>
 <property>
 <name>hadoop.proxyuser.miner.groups</name>
@@ -208,7 +208,7 @@ DEFAULT</value>
 </property>
 <property>
 <name>cas.conf.serverName.off</name>
-<value>http://s104:25002</value>
+<value>http://s110:25002</value>
 </property>
 <property>
 <name>hadoop.proxyuser.solr.hosts</name>
@@ -224,7 +224,7 @@ DEFAULT</value>
 </property>
 <property>
 <name>cas.conf.casServerUrlPrefix.on</name>
-<value>https://172.18.18.103:20027/cas/</value>
+<value>https://172.18.18.109:20027/cas/</value>
 </property>
 <property>
 <name>fs.trash.checkpoint.interval</name>
@@ -248,7 +248,7 @@ DEFAULT</value>
 </property>
 <property>
 <name>cas.conf.casServerUrlPrefix.off</name>
-<value>https://172.18.18.103:20009/cas/</value>
+<value>https://172.18.18.109:20009/cas/</value>
 </property>
 <property>
 <name>hadoop.security.authentication</name>
@@ -372,11 +372,11 @@ DEFAULT</value>
 </property>
 <property>
 <name>cas.conf.casServerLoginUrl</name>
-<value>https://172.18.18.103:20009/cas/login</value>
+<value>https://172.18.18.109:20009/cas/login</value>
 </property>
 <property>
 <name>hadoop.http.server.name</name>
-<value>http://s104:25002</value>
+<value>http://s110:25002</value>
 </property>
 <property>
 <name>ha.zookeeper.session-timeout.ms</name>
