@@ -1,5 +1,6 @@
 package com.hzgc.ftpserver.util;
 
+import com.hzgc.dubbo.dynamicrepo.FileType;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
@@ -124,11 +125,13 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     * 通过rowKey解析到照片存储路径
+     * 通过rowKey解析到文件保存的绝对路径
+     *
      * @param rowKey rowKey
-     * @return fileName 照片存储路径
+     * @param type   文件类型
+     * @return 绝对路径
      */
-    public static String key2pictureFileName(String rowKey) {
+    public static String key2absolutePath(String rowKey, FileType type) {
         String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
         String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
         String year = timeStr.substring(0, 2);
@@ -139,21 +142,50 @@ public class FtpUtil implements Serializable {
         //String second = timeStr.substring(10, 12);
 
         StringBuilder fileName = new StringBuilder();
-        fileName = fileName.append("/opt/ftpserver/").append(ipcId).
+        fileName = fileName.append("/opt/data/").append(ipcId).
                 append("/20").append(year).append("/").append(month).append("/").append(day).
-                append("/").append(hour).append("/").append(minute).append("/").append(rowKey).append(".jpg");
-        //TODO:"/opt/ftpserver/"将从配置文件读取
+                append("/").append(hour).append("/").append(minute).append("/");
+
+        int numType = Integer.parseInt(rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length()));
+
+        if (type == FileType.PICTURE) {
+            if (numType == 0) {
+                fileName = fileName.append(rowKey).append(".jpg");
+            } else if (numType > 0) {
+                rowKey = rowKey.substring(0, rowKey.lastIndexOf("_") + 1) + "00";
+                fileName = fileName.append(rowKey).append(".jpg");
+            } else {
+                LOG.warn("rowKey format error :" + rowKey);
+            }
+        } else if (type == FileType.FACE) {
+            if (numType == 0) {
+                LOG.info("picture rowKey not analysis face filePath !");
+            } else if (numType > 0) {
+                fileName = fileName.append(rowKey).append(".jpg");
+            } else {
+                LOG.warn("rowKey format error :" + rowKey);
+            }
+        } else if (type == FileType.JSON) {
+            if (numType == 0) {
+                fileName = fileName.append(rowKey).append(".json");
+            } else if (numType > 0) {
+                rowKey = rowKey.substring(0, rowKey.lastIndexOf("_") + 1) + "00";
+                fileName = fileName.append(rowKey).append(".json");
+            } else {
+                LOG.warn("rowKey format error :" + rowKey);
+            }
+        }
         return fileName.toString();
     }
 
     /**
-     * 通过rowKey解析到Json文件存储路径
+     * 通过rowKey解析文件保存相对路径
+     *
      * @param rowKey rowKey
-     * @return fileName Json文件存储路径
+     * @return 相对路径
      */
-    public static String key2jsonFileName(String rowKey) {
+    public static String key2relativePath(String rowKey) {
         String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
-
         String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
         String year = timeStr.substring(0, 2);
         String month = timeStr.substring(2, 4);
@@ -162,24 +194,96 @@ public class FtpUtil implements Serializable {
         String minute = timeStr.substring(8, 10);
         //String second = timeStr.substring(10, 12);
 
-        int type = Integer.parseInt(rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length()));
+        StringBuilder filePath = new StringBuilder();
+        filePath = filePath.append("/opt/data/").append(ipcId).
+                append("/20").append(year).append("/").append(month).append("/").append(day).
+                append("/").append(hour).append("/").append(minute);
+        return filePath.toString();
+    }
 
+    /**
+     * 通过rowKey解析文件名称
+     *
+     * @param rowKey rowKey
+     * @param type   文件类型
+     * @return 文件名称
+     */
+    public static String key2fileName(String rowKey, FileType type) {
         StringBuilder fileName = new StringBuilder();
-        if (type == 0) {
-            fileName = fileName.append("/opt/ftpserver/").append(ipcId).
-                    append("/20").append(year).append("/").append(month).append("/").append(day).
-                    append("/").append(hour).append("/").append(minute).append("/").append(rowKey).append(".json");
-        } else if (type > 0) {
-            //StringBuilder key = new StringBuilder();
-            //key = key.append(rowKey.substring(0, rowKey.lastIndexOf("_"))).append("_00");
-            rowKey = rowKey.substring(0, rowKey.lastIndexOf("_") + 1) + "00";
-            fileName = fileName.append("/opt/ftpserver/").append(ipcId).
-                    append("/20").append(year).append("/").append(month).append("/").append(day).
-                    append("/").append(hour).append("/").append(minute).append("/").append(rowKey).append(".json");
-            //TODO:"/opt/ftpserver/"将从配置文件读取
+
+        int numType = Integer.parseInt(rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length()));
+
+        if (type == FileType.PICTURE) {
+            if (numType == 0) {
+                fileName = fileName.append(rowKey).append(".jpg");
+            } else if (numType > 0) {
+                rowKey = rowKey.substring(0, rowKey.lastIndexOf("_") + 1) + "00";
+                fileName = fileName.append(rowKey).append(".jpg");
+            } else {
+                LOG.warn("rowKey format error : " + rowKey);
+            }
+        } else if (type == FileType.FACE) {
+            if (numType == 0) {
+                LOG.info("picture rowKey not analysis face fileName !");
+            } else if (numType > 0) {
+                fileName = fileName.append(rowKey).append(".jpg");
+            } else {
+                LOG.warn("rowKey format error :" + rowKey);
+            }
+        } else if (type == FileType.JSON) {
+            if (numType == 0) {
+                fileName = fileName.append(rowKey).append(".json");
+            } else if (numType > 0) {
+                rowKey = rowKey.substring(0, rowKey.lastIndexOf("_") + 1) + "00";
+                fileName = fileName.append(rowKey).append(".json");
+            } else {
+                LOG.warn("rowKey format error : " + rowKey);
+            }
         } else {
-            LOG.warn("rowkey format error" + rowKey);
+            LOG.warn("method param is error.");
         }
         return fileName.toString();
     }
+
+    /**
+     * 保存字节数组到本地文件
+     *
+     * @param bytes 字节数组
+     * @param rowKey rowKey
+     * @param fileName 文件名称
+     */
+    public static void bytesToFile(byte[] bytes, String rowKey, String fileName) {
+        BufferedOutputStream bos = null;
+        FileOutputStream fos = null;
+        //File file = null;
+        String filePath = key2relativePath(rowKey);
+        File dir = new File(filePath);
+        if (!dir.exists()) {//判断文件目录是否存在
+            dir.mkdirs();
+        }
+        try {
+            //file = new File(filePath + "/" + fileName);
+            fos = new FileOutputStream( dir.getPath()+ File.separator + fileName);
+            bos = new BufferedOutputStream(fos);
+            bos.write(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+    }
+
 }

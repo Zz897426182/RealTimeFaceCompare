@@ -42,7 +42,7 @@
 </property>
 <property>
 <name>hbase.hmaster.ip.lists</name>
-<value>s105,s104</value>
+<value>s111,s110</value>
 </property>
 <property>
 <name>hbase.master.executor.openregion.threads</name>
@@ -74,7 +74,7 @@
 </property>
 <property>
 <name>master.rmi.registry.ip</name>
-<value>s104</value>
+<value>s110</value>
 </property>
 <property>
 <name>hbase.fileStream.cleaner.tmp.thread.wakefrequency</name>
@@ -98,7 +98,7 @@
 </property>
 <property>
 <name>hbase.zookeeper.quorum</name>
-<value>s105,s104,s103</value>
+<value>s111,s110,s109</value>
 </property>
 <property>
 <name>hbase.server.alias</name>
@@ -206,7 +206,7 @@
 </property>
 <property>
 <name>master.rmi.registry.host</name>
-<value>s104</value>
+<value>s110</value>
 </property>
 <property>
 <name>hbase.fileStream.cleaner.tmp.expire.time</name>
@@ -238,7 +238,7 @@
 </property>
 <property>
 <name>hbase.master.info.bindAddress</name>
-<value>s104</value>
+<value>s110</value>
 </property>
 <property>
 <name>jmx.include.hosts</name>
@@ -338,7 +338,7 @@
 </property>
 <property>
 <name>hbase.master.ipc.address</name>
-<value>s104</value>
+<value>s110</value>
 </property>
 <property>
 <name>hbase.crypto.keyprovider.parameters</name>

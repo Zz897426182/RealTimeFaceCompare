@@ -123,6 +123,18 @@ public class DynamicTable implements Serializable {
      */
     public static final byte[] SEARCHRES_COLUMN_SEARCHTYPE = Bytes.toBytes("t");
     /**
+     * IPCID表
+     */
+    public static final String TABLE_IPCID = "IPCID";
+    /**
+     * IPCID表列簇
+     */
+    public static final byte[] IPCID_COLUMNFAMILY = Bytes.toBytes("i");
+    /**
+     * ftpAddress
+     */
+    public static final byte[] IPCID_COLUMN_FTPADDRESS = Bytes.toBytes("a");
+    /**
      * 只有人脸图
      */
     public static final String PERSON_TYPE = "PERSON";
