@@ -38,14 +38,18 @@ object FaceOffLineAlarmJob {
         val splitResult = totalData.map(totailDataElem => (totailDataElem.split(separator)(0), totailDataElem.split(separator)(1), totailDataElem.split(separator)(2)))
         val getDays = splitResult.map(splitResultElem => {
           val objRole = offLineAlarmRule.get(splitResultElem._2)
-          val days = StreamingUtils.getSimilarity(objRole)
-          (splitResultElem._1, splitResultElem._2, splitResultElem._3, days)
-        })
-        val filterResult = getDays.filter(getFilter => getFilter._3 != null).
+          if (objRole == null && objRole.isEmpty) {
+            (splitResultElem._1, splitResultElem._2, splitResultElem._3, null)
+          } else {
+            val days = StreamingUtils.getSimilarity(objRole)
+            (splitResultElem._1, splitResultElem._2, splitResultElem._3, days)
+          }
+        }).filter(_._4 != null)
+        val filterResult = getDays.filter(getFilter => getFilter._3 != null && getFilter._3.length != 0).
           map(getDaysElem => (getDaysElem._1, getDaysElem._2, getDaysElem._3, StreamingUtils.timeTransition(getDaysElem._3), getDaysElem._4)).
-          filter(ff => ff._4 != null).
+          filter(ff => ff._4 != null && ff._4.length != 0).
           filter(filter => filter._4 > filter._5.toString)
-        //将离线告警信息推送到MQ
+        //将离线告警信息推送到MQ()
         filterResult.foreach(filterResultElem => {
           val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
           val dateStr = df.format(new Date())

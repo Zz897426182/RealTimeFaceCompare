@@ -49,8 +49,7 @@ if [ ! -e $BIN_DIR/start-face-offline-alarm-job.sh ];then
 fi
 
 ##将离线告警任务添加定时器crontab(任务每天凌晨执行一次)
-echo "0 0 * * * /root/faceTest/RealTimeCompare/bin/start-face-offline-alarm-job.sh" >> /var/spool/cron/root
+echo "0 0 * * * ${BIN_DIR}/start-face-offline-alarm-job.sh" >> /var/spool/cron/root
 
 echo "Successfully added offLineAlarmJob to crontab!!!"
-
 
