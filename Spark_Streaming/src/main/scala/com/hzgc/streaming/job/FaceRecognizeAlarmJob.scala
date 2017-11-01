@@ -99,7 +99,11 @@ object FaceRecognizeAlarmJob {
         val gson = new Gson()
         val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         parRDD.foreach(result => {
-          val flag = gp.getCapture(result._1)
+          var flag = gp.getCapture(result._1)
+          if (flag == null) {
+            Thread.sleep(5000)
+          }
+          flag = gp.getCapture(result._1)
           if (flag != null) {
             val recognizeAlarmMessage = new RecognizeAlarmMessage()
             val items = new ArrayBuffer[Item]()
@@ -121,6 +125,8 @@ object FaceRecognizeAlarmJob {
               gson.toJson(recognizeAlarmMessage).getBytes(),
               null)
 
+          }else{
+            println("*********  Hbase no photo [DynamicID = "+result._1+"]  *********")
           }
         })
       })

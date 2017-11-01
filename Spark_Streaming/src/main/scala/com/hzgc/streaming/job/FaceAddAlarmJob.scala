@@ -88,9 +88,12 @@ object FaceAddAlarmJob {
         parRDD.foreach(result => {
           //识别集合为null，对该条数据进行新增告警。
           if (result._4 == null || result._4.isEmpty) {
-            val flag = gp.getCapture(result._1)
+            var flag = gp.getCapture(result._1)
+            if (flag == null) {
+              Thread.sleep(5000)
+            }
+            flag = gp.getCapture(result._1)
             if (flag != null) {
-
               val dateStr = df.format(new Date())
               val addAlarmMessage = new AddAlarmMessage()
               addAlarmMessage.setAlarmTime(dateStr)
@@ -102,6 +105,8 @@ object FaceAddAlarmJob {
                 result._1,
                 gson.toJson(addAlarmMessage).getBytes(),
                 null)
+            }else{
+              println("*********  Hbase no photo [DynamicID = "+result._1+"]  *********")
             }
           }
         })
