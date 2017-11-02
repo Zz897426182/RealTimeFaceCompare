@@ -785,7 +785,6 @@ class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, S
         DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
         return dynamicPhotoService.getBatchCaptureMessage(keys, type);
     }
-    
 }
 
 /**
