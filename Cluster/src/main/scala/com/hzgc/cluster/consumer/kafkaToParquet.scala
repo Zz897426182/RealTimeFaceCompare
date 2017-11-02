@@ -13,7 +13,7 @@ import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 
 object kafkaToParquet {
 
-  case class pic(picurl: String, eyeglasses: Int, turefeature: String, gender: Int, hairColor: Int, hairStyle: Int,
+  case class pic(ftpurl: String, eyeglasses: Int, turefeature: String, gender: Int, hairColor: Int, hairStyle: Int,
                  hat: Int, huzi: Int, tie: Int, ipcId: String, timequantum: String, timestamp: String, pictype: Int) {}
 
   val properties: Properties = StreamingUtils.getProperties
