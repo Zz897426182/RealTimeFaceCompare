@@ -57,7 +57,7 @@ object kafkaToParquet {
 
     kafkaDF.foreachRDD(rdd => {
       import session.implicits._
-      rdd.coalesce(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.coalesce(3,true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
     })
     str.start()
     str.awaitTermination()
