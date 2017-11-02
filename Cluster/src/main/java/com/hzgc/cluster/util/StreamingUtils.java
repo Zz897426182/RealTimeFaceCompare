@@ -23,7 +23,6 @@ public class StreamingUtils implements Serializable {
     public static Properties getProperties() {
         Properties ps = new Properties();
         try {
-            System.out.println(FileUtil.loadResourceFile("."));
             InputStream is = new FileInputStream(FileUtil.loadResourceFile("sparkJob.properties"));
             ps.load(is);
         } catch (Exception e) {
