@@ -977,7 +977,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public String getFeature(String tag, byte[] photo) {
         long start = System.currentTimeMillis();
-        float[] floatFeature = FaceFunction.featureExtract(photo);
+        float[] floatFeature = FaceFunction.featureExtract(photo).getFeature();
         String feature = "";
         if (floatFeature != null && floatFeature.length == 512) {
             feature = FaceFunction.floatArray2string(floatFeature);

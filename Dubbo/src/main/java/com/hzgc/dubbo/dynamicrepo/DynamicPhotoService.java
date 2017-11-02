@@ -118,4 +118,13 @@ public interface DynamicPhotoService {
      * @return
      */
     CapturedPicture getImageData(CapturedPicture capturedPicture);
+
+    /**
+     * 返回多张图片数据流
+     *
+     * @param capturedPictures
+     * @param type
+     * @return
+     */
+    List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type);
 }

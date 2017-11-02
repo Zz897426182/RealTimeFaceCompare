@@ -761,6 +761,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         }
         return capturedPicture;
     }
+
+    @Override
+    public List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type) {
+        return null;
+    }
 }
 
 /**
@@ -779,6 +784,11 @@ class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, S
     public List<CapturedPicture> call() throws Exception {
         DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
         return dynamicPhotoService.getBatchCaptureMessage(keys, type);
+    }
+
+
+    public List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type) {
+        return null;
     }
 
 }
