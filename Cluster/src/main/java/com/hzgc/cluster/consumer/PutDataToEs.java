@@ -56,11 +56,8 @@ public class PutDataToEs implements Serializable{
         map.put("timequantum", timequantum);
         map.put("attributes",faceattr);
         if (ftpurl != null) {
-            String path = ftpurl.substring(ftpurl.lastIndexOf(":"));
-            String path1 = path.substring(path.indexOf("/"));
-            String rowkey = FtpUtil.transformNameToKey(path1);
             IndexResponse indexResponse = ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX,
-                    DynamicTable.PERSON_INDEX_TYPE, rowkey).setSource(map).get();
+                    DynamicTable.PERSON_INDEX_TYPE, ftpurl).setSource(map).get();
         }
     }
 }

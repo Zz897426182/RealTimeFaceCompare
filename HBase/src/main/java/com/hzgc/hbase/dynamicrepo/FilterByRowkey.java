@@ -300,7 +300,7 @@ public class FilterByRowkey {
         }
         return capturedPictures;
     }
-    
+
 
     public SearchResult getRowKey_tmp(SearchOption option) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder_tmp(option);
