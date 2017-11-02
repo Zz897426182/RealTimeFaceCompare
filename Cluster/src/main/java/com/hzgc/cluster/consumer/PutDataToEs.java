@@ -50,7 +50,6 @@ public class PutDataToEs implements Serializable{
         int tie = Tie.getTievalue();
         map.put("tie",tie);
         map.put("pictype",picType);
-        map.put("url",ftpurl);
         map.put("timestamp", timestamp);
         map.put("ipcid", ipcid);
         map.put("timequantum", timequantum);
