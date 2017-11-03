@@ -85,10 +85,10 @@
     <build>
         <resources>
             <resource>
-                <targetPath>${project.build.directory}/classes/conf</targetPath>
+                <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>*.propertie</include>
+                    <include>*.properties</include>
                 </includes>
             </resource>
         </resources>

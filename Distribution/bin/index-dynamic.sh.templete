@@ -30,21 +30,57 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
     "mappings": {
         "person": {
             "properties": {
-                "f" : {
+                "ftpurl" : {
                     "type" : "text",
-                    "analyzer" : "trigrams"
+                    "analyzer" : "not_analyzed"
                 },
-                "t" : {
+                "eyeglasses" : {
+                          "type" : "long",
+                          "analyzer" : "not_analyzed"
+                 },
+                "feature" : {
+                           "type" : "text",
+                           "analyzer" : "not_analyzed"
+                },
+                "gender" : {
+                           "type" : "long",
+                           "analyzer" : "not_analyzed"
+                },
+                "haircolor" : {
+                             "type" : "long",
+                             "analyzer" : "not_analyzed"
+                },
+                "hairstyle" : {
+                             "type" : "long",
+                             "analyzer" : "not_analyzed"
+                },
+                "hat" : {
+                             "type" : "long",
+                             "analyzer" : "not_analyzed"
+                },
+                "huzi" : {
+                            "type" : "long",
+                            "analyzer" : "not_analyzed"
+                },
+                "tie" : {
+                             "type" : "long",
+                             "analyzer" : "not_analyzed"
+                },
+                "ipcid" : {
+                             "type" : "text",
+                             "analyzer" : "not_analyzed"
+                },
+                "timequantum" : {
+                             "type" : "text",
+                             "analyzer" : "not_analyzed"
+                },
+                "timestamp" : {
                     "type" : "date",
                     "format": "yyyy-MM-dd HH:mm:ss"
                 },
-                "fea" : {
-                    "type" : "text",
+                "pictype" : {
+                    "type" : "long",
                     "index" : "not_analyzed"
-                },
-                "sj": {
-                    "type": "long",
-                    "index": "not_analyzed"
                 }
             }
         }
