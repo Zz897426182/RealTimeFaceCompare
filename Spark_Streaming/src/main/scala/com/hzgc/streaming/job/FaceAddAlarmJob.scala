@@ -67,15 +67,15 @@ object FaceAddAlarmJob {
             val finalResult = filterResult.sortWith(_.sim > _.sim).take(3)
             (message._1, ipcID, platID, finalResult)
           } else {
-            println("This device [" + ipcID + "] does not bind to added the alarm rule, which is not calculated by default")
+            println("This device [" + ipcID + "] does not bind added the alarm rule!")
             (message._1, ipcID, null, filterResult)
           }
         } else {
-          println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
+          println("This device [" + ipcID + "] does not bind the alarm rules")
           (message._1, ipcID, null, filterResult)
         }
       } else {
-        println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
+        println("This device [" + ipcID + "] does not bind platform ID")
         (message._1, ipcID, null, filterResult)
       }
     }).filter(jsonResultFilter => jsonResultFilter._3 != null)
@@ -97,11 +97,14 @@ object FaceAddAlarmJob {
               addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
               addAlarmMessage.setDynamicID(result._1)
               addAlarmMessage.setDynamicDeviceID(result._2)
+              println(gson.toJson(addAlarmMessage))
               rocketMQProducer.send(result._3,
                 "alarm_" + DeviceTable.ADDED.toString,
                 result._1,
                 gson.toJson(addAlarmMessage).getBytes(),
                 null)
+            }else {
+              println("****** " + result._1 + " no picture *****")
             }
           }
         })
