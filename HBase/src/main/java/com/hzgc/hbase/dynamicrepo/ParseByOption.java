@@ -4,7 +4,6 @@ import com.hzgc.dubbo.attribute.Attribute;
 import com.hzgc.dubbo.dynamicrepo.SearchOption;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
 
 
 class ParseByOption {
@@ -30,8 +29,6 @@ class ParseByOption {
         if (option.getThreshold() == 0.0) {
             return "";
         }
-        //date分区字段
-        SimpleDateFormat dateFormat_date = new SimpleDateFormat("yyyy-MM-dd");
         StringBuilder finalSql = new StringBuilder();
         finalSql
                 .append("select * from (select *, ")
@@ -97,8 +94,9 @@ class ParseByOption {
                 }
             }
         }
-        //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒
+
         if (option.getStartDate() != null && option.getEndDate() != null) {
+            //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒
             finalSql
                     .append(" and ")
                     .append(DynamicTable.TIMESTAMP)
@@ -112,9 +110,7 @@ class ParseByOption {
                     .append("'")
                     .append(option.getEndDate())
                     .append("'");
-        }
-        //判断日期分区 数据格式 年-月-日
-        if (option.getStartDate() != null && option.getEndDate() != null) {
+            //判断日期分区 数据格式 年-月-日
             finalSql
                     .append(" and ")
                     .append(DynamicTable.DATE)

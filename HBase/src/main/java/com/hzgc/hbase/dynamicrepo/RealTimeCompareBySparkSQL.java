@@ -104,7 +104,6 @@ class RealTimeCompareBySparkSQL {
         //根据imageId查找图片
         byte[] image;
         if (option.getImage() != null) {
-            
             image = option.getImage();
             searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         } else {
