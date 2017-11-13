@@ -1,9 +1,9 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-face-add-alarm-job.sh
-## Description: to start faceAddAlarmJob
-## Version:     1.5
+## Filename:    start-face-offline-alarm-job.sh
+## Description: to start faceRecognizeAlarmJob
+## Version:     1.5.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
 ################################################################################
@@ -14,18 +14,19 @@
 #---------------------------------------------------------------------#
 cd `dirname $0`
 ## bin目录
-BIN_DIR=`pwd`   
+BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
 ## 配置文件目录
-CONF_DIR=${DEPLOY_DIR}/conf    
+CONF_DIR=${DEPLOY_DIR}/conf
 ## Jar 包目录
-LIB_DIR=${DEPLOY_DIR}/lib       
+LIB_DIR=${DEPLOY_DIR}/lib
 ## log 日记目录
-LOG_DIR=${DEPLOY_DIR}/logs       
-##  log 日记文件                
-LOG_FILE=${LOG_DIR}/sparkFaceAddAlarmJob.log       
-## bigdata cluster path 
+LOG_DIR=${DEPLOY_DIR}/logs
+##  log 日记文件
+LOG_FILE=${LOG_DIR}/sparkFaceRecognizeAlarmJob.log
+
+## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 ## module version
 MODULE_VERSION=1.5.0
@@ -57,14 +58,14 @@ ETC_PROFILE=/etc/profile
 BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
 ## spark bin dir
 SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
-## spark master 
+## spark master
 SPARK_MASTER_PARAM=yarn-cluster
-## spark executor-memory 
+## spark executor-memory
 SPARK_EXECUTOR_MEMORY=5g
-## spark executor-cores 
+## spark executor-cores
 SPARK_EXECUTOR_CORES=4
-## spark class 
-SPARK_CLASS_PARAM=com.hzgc.streaming.job.FaceAddAlarmJob
+## spark class
+SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceRecognizeAlarmJob
 
 
 if [ ! -d ${LOG_DIR} ];then
@@ -219,7 +220,6 @@ fi
 
 ## 识别告警任务
 source ${ETC_PROFILE}
-source ${BIGDATA_ENV}
 nohup ${SPARK_HOME}/spark-submit \
 --master ${SPARK_MASTER_PARAM} \
 --executor-memory ${SPARK_EXECUTOR_MEMORY} \
@@ -247,9 +247,9 @@ ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
 ${CONF_DIR}/sparkJob.properties,\
-${CONF_DIR}/rocketmq.properties > ${LOG_FILE} 2>&1 &
+${CONF_DIR}/rocketmq.properties \
+${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &

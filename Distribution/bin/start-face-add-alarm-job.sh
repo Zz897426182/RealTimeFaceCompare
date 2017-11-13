@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-add-alarm-job.sh
 ## Description: to start faceAddAlarmJob
-## Version:     1.5
+## Version:     1.5.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
 ################################################################################
@@ -25,7 +25,8 @@ LIB_DIR=${DEPLOY_DIR}/lib
 LOG_DIR=${DEPLOY_DIR}/logs       
 ##  log 日记文件                
 LOG_FILE=${LOG_DIR}/sparkFaceAddAlarmJob.log
-## bigdata cluster path 
+
+## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 ## module version
 MODULE_VERSION=1.5.0
@@ -57,14 +58,14 @@ ETC_PROFILE=/etc/profile
 BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
 ## spark bin dir
 SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
-## spark master 
+## spark master
 SPARK_MASTER_PARAM=yarn-cluster
-## spark executor-memory 
+## spark executor-memory
 SPARK_EXECUTOR_MEMORY=5g
-## spark executor-cores 
+## spark executor-cores
 SPARK_EXECUTOR_CORES=4
-## spark class 
-SPARK_CLASS_PARAM=com.hzgc.streaming.job.FaceAddAlarmJob
+## spark class
+SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceAddAlarmJob
 
 
 if [ ! -d ${LOG_DIR} ];then
@@ -91,7 +92,6 @@ if [ ! -e ${CONF_DIR}/sparkJob.properties ];then
     exit 0
 fi
 
-bigdata cluster下Spark/spark/conf 下运行任务所需要的配置文件
 rm -rf ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf/es-config.properties
 rm -rf ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf/rocketmq.properties
 rm -rf ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf/sparkJob.properties
@@ -104,7 +104,7 @@ cp ${CONF_DIR}/ftpAddress.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/hbase-site.xml  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${BIGDATA_CLUSTER_PATH}/HBase/hbase/lib/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ${LIB_DIR}
 
-##判断是否存在jar
+## 判断是否存在jar
 if [ ! -e ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar ];then
     echo "${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar does not exit!"
     exit 0
@@ -218,9 +218,8 @@ if [ ! -e ${CONF_DIR}/rocketmq.properties ];then
     exit 0
 fi
 
-## 新增告警任务
+## 识别告警任务
 source ${ETC_PROFILE}
-source ${BIGDATA_ENV}
 nohup ${SPARK_HOME}/spark-submit \
 --master ${SPARK_MASTER_PARAM} \
 --executor-memory ${SPARK_EXECUTOR_MEMORY} \
@@ -248,9 +247,9 @@ ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
 ${CONF_DIR}/sparkJob.properties,\
-${CONF_DIR}/rocketmq.properties > ${LOG_FILE} 2>&1 &
+${CONF_DIR}/rocketmq.properties \
+${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
