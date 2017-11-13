@@ -94,9 +94,8 @@ class ParseByOption {
                 }
             }
         }
-
+        //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒
         if (option.getStartDate() != null && option.getEndDate() != null) {
-            //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒
             finalSql
                     .append(" and ")
                     .append(DynamicTable.TIMESTAMP)
@@ -110,7 +109,9 @@ class ParseByOption {
                     .append("'")
                     .append(option.getEndDate())
                     .append("'");
-            //判断日期分区 数据格式 年-月-日
+        }
+        //判断日期分区 数据格式 年-月-日
+        if (option.getStartDate() != null && option.getEndDate() != null) {
             finalSql
                     .append(" and ")
                     .append(DynamicTable.DATE)

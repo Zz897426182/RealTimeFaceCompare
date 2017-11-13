@@ -101,7 +101,7 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option) {
         //提取上传图片的特征值
         float[] searchFea;
-        //根据imageId查找图片
+        //根据imageId查找到的图片
         byte[] image;
         if (option.getImage() != null) {
             image = option.getImage();
