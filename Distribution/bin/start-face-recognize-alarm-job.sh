@@ -25,7 +25,6 @@ LIB_DIR=${DEPLOY_DIR}/lib
 LOG_DIR=${DEPLOY_DIR}/logs       
 ##  log 日记文件                
 LOG_FILE=${LOG_DIR}/sparkFaceAddAlarmJob.log       
-
 ## bigdata cluster path 
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 ## module version
@@ -248,9 +247,9 @@ ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar \
+${LIB_DIR}/streaming-${MODULE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
 ${CONF_DIR}/sparkJob.properties,\
-${CONF_DIR}/rocketmq.properties \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar > $LOG_FILE 2>&1 &
+${CONF_DIR}/rocketmq.properties > ${LOG_FILE} 2>&1 &
