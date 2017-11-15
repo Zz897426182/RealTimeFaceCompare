@@ -59,17 +59,15 @@ public class CapturePictureCatchHistoryTest {
         String b = "2L04129PAU01933";
         String c = "DS-2DE72XYZIW-ABCVS20160823CCCH641752612";
         String d = "3B0383FPAG00883";
-        a.add(b);
-        a.add(c);
-        a.add(d);
-        searchOption.setDeviceIds(a);
+
+        searchOption.setDeviceIds(null);
         searchOption.setSortParams("-timestamp");
         searchOption.setThreshold(0.0f);
         searchOption.setSearchType(null);
         searchOption.setImage(null);
         searchOption.setImageId(null);
-        searchOption.setEndDate(null);
-        searchOption.setStartDate(null);
+        searchOption.setEndDate("2017-11-15 23:59:59");
+        searchOption.setStartDate("2017-11-15 00:00:00");
         searchOption.setPlatformId(null);
         searchOption.setPlateNumber(null);
         searchOption.setIntervals(null);
@@ -92,6 +90,8 @@ public class CapturePictureCatchHistoryTest {
         //searchOption.setAttributes(null);
         CapturePictureSearchServiceImpl capturePictureSearchService = new CapturePictureSearchServiceImpl();
         SearchResult searchResult = capturePictureSearchService.getCaptureHistory(searchOption);
+        int aa = searchResult.getTotal();
+        System.out.println(aa);
         System.out.println(searchResult);
     }
 }
