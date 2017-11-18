@@ -3,7 +3,8 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    config-merge-parquet-file.sh
-## Description: 配置合并小文件服务，并且启动服务
+## Description: 1,配置合并小文件服务，并且启动服务
+##              2,配置监听大数据ftp 和dubbo 服务 的定时任务
 ## Version:     1.0
 ## Author:      lidiliang
 ## Created:     2017-11-17
@@ -17,6 +18,15 @@ cd ..
 DEPLOY_DIR=`pwd`
 CONF_DIR=$DEPLOY_DIR/conf    ### 项目根目录
 LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
+
+
+cd ..
+declare -r BIGDATA_SERVICE_DIR=`pwd`
+declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
+declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
+declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
+declare -r FTP_HOSTS_FILE=${CONF_DIR}/ftp-hostnames.properties
+
 if [ -f $LOG_DIR/config-parquet ];then
     echo "已经配置过，请检查/etc/crontab,    exit with 0"
     exit 0
@@ -25,6 +35,7 @@ mkdir -p ${LOG_DIR}
 echo "0,15,30,45 * * * * root  $BIN_DIR/schema-merge-parquet-file.sh"  >> /etc/crontab 
 echo "5 */1 * * * root  $BIN_DIR/schema-merge-final-table.sh"   >> /etc/crontab
 echo "10 3 * * * root $BIN_DIR/schema-merge-final-table-crash.sh"  >> /etc/crontab
+echo "*/5  * * * * root  ${SERVICE}/bin/make_sure_bidata_service_alive.sh"  >> /etc/crontab
 echo config-parquet > $LOG_DIR/config-parquet
 echo "restart crond service"
 service crond restart
