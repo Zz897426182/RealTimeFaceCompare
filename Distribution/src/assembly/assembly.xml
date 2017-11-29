@@ -22,14 +22,6 @@
             </includes>
             <outputDirectory>\</outputDirectory>
         </fileSet>
-        <!--项目一键配置文件-->
-        <fileSet>
-            <directory>../Distribution/src/resources</directory>
-            <includes>
-                <include>**</include>
-            </includes>
-            <outputDirectory>/</outputDirectory>
-        </fileSet>
         <!--项目模块-->
         <fileSet>
             <directory>../Cluster/target/cluster-1.5.0</directory>
