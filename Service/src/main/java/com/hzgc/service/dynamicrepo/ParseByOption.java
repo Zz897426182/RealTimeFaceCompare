@@ -51,8 +51,27 @@ class ParseByOption {
                 .append(option.getThreshold());
         //判断人脸对象属性
         if (option.getAttributes() != null && option.getAttributes().size() > 0) {
-            for (Attribute attribute : option.getAttributes()) {
-                if (attribute.getValues() != null) {
+            finalSql.append(" and (");
+            Attribute attribute = new Attribute();
+            for (int i = 0; i < option.getAttributes().size(); i++) {
+                if (attribute.getValues() != null && attribute.getValues().size() > 0) {
+                    finalSql
+                            .append(attribute.getIdentify().toLowerCase())
+                            .append(" in ")
+                            .append("(");
+                    for (int j = 0; j < attribute.getValues().size(); j++) {
+                        if (attribute.getValues().size() - 1 > j) {
+                            finalSql
+                                    .append(attribute.getValues().get(j).getValue())
+                                    .append(",");
+                        } else {
+                            finalSql
+                                    .append(attribute.getValues().get(j).getValue())
+                                    .append(")");
+                        }
+                    }
+                }
+                if (option.getAttributes().size() - 1 > i) {
                     switch (attribute.getLogistic()) {
                         case AND:
                             finalSql.append(" and ");
@@ -61,21 +80,12 @@ class ParseByOption {
                             finalSql.append(" or ");
                             break;
                     }
-                    for (int i = 0; i < attribute.getValues().size(); i++) {
-                        finalSql
-                                .append(attribute.getIdentify().toLowerCase())
-                                .append("=")
-                                .append(attribute.getValues().get(i).getValue());
-                        if (attribute.getValues().size() - 1 > i) {
-                            finalSql.append(" or ");
-                        }
-                    }
                 }
             }
         }
         //判断一个或多个时间区间 数据格式 小时+分钟 例如:1122
         if (option.getIntervals() != null && option.getIntervals().size() > 0) {
-            finalSql.append(" and ");
+            finalSql.append(" ) and ");
             for (int i = 0; option.getIntervals().size() > i; i++) {
                 int start_sj = option.getIntervals().get(i).getStart();
                 int start_st = (start_sj / 60) * 100 + start_sj % 60;
