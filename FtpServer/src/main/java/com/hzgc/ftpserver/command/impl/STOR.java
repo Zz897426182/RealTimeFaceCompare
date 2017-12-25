@@ -19,12 +19,11 @@
 
 package com.hzgc.ftpserver.command.impl;
 
-import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.ftpserver.common.FtpUtil;
-import com.hzgc.jni.FaceFunction;
+import com.hzgc.ftpserver.queue.BufferQueue;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
 import com.hzgc.ftpserver.impl.*;
@@ -37,14 +36,14 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
- * 
+ * <p>
  * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
- * 
+ * <p>
  * This command causes the server-DTP to accept the data transferred via the
  * data connection and to store the data as a file at the server site. If the
  * file specified in the pathname exists at the server site, then its contents
@@ -153,8 +152,8 @@ public class STOR extends AbstractCommand {
             try {
                 outStream = file.createOutputStream(skipLen);
 
-                ProducerOverFtp kafkaProducer = context.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
+                BufferQueue bufferQueue = context.getBufferQueue();
 
                 InputStream is = dataConnection.getDataInputStream();
                 ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
@@ -180,20 +179,9 @@ public class STOR extends AbstractCommand {
                             String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
                             //发送到rocketMQ
                             rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
-                            //rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
-
-                            FaceObject faceObject = new FaceObject();
-                            faceObject.setIpcId(ipcID);
-                            faceObject.setTimeStamp(timeStamp);
-                            faceObject.setTimeSlot(timeSlot);
-                            faceObject.setDate(date);
-                            faceObject.setType(SearchType.PERSON);
-                            faceObject.setAttribute(FaceFunction.featureExtract(data));
-                            faceObject.setStartTime(sdf.format(new Date()));
-
-                            //发送到kafka
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpHostNameUrl, faceObject);
-                            LOG.info("send to kafka successfully! {}", ftpHostNameUrl);
+                            BlockingQueue<String> queue = bufferQueue.getQueue();
+                            queue.put(fileName);
+                            LOG.info("Push to queue success,queue size : " + queue.size());
                         }
                     }
                 }
@@ -204,7 +192,7 @@ public class STOR extends AbstractCommand {
 
                 // attempt to close the output stream so that errors in 
                 // closing it will return an error to the client (FTPSERVER-119) 
-                if(outStream != null) {
+                if (outStream != null) {
                     outStream.close();
                 }
 
@@ -214,7 +202,7 @@ public class STOR extends AbstractCommand {
                 ServerFtpStatistics ftpStat = (ServerFtpStatistics) context
                         .getFtpStatistics();
                 ftpStat.setUpload(session, file, transSz);
-                
+
             } catch (SocketException ex) {
                 LOG.debug("Socket exception during data transfer", ex);
                 failure = true;
@@ -232,6 +220,8 @@ public class STOR extends AbstractCommand {
                                         context,
                                         FtpReply.REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN,
                                         "STOR", fileName, file));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             } finally {
                 // make sure we really close the output stream
                 IoUtils.close(outStream);

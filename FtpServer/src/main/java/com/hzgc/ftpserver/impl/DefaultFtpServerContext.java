@@ -21,6 +21,7 @@ package com.hzgc.ftpserver.impl;
 
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
+import com.hzgc.ftpserver.queue.BufferQueue;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.ftpserver.ConnectionConfig;
 import com.hzgc.ftpserver.ConnectionConfigFactory;
@@ -88,6 +89,7 @@ public class DefaultFtpServerContext implements FtpServerContext {
 
     private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList<Authority>();
     private static final List<Authority> ANON_AUTHORITIES = new ArrayList<Authority>();
+    private BufferQueue bufferQueue = BufferQueue.getInstance();
     
     /**
      * The thread pool executor to be used by the server using this context
@@ -293,5 +295,8 @@ public class DefaultFtpServerContext implements FtpServerContext {
 
     public RocketMQProducer getProducerRocketMQ() {
         return producerRocketMQ;
+    }
+    public BufferQueue getBufferQueue() {
+        return bufferQueue;
     }
 }

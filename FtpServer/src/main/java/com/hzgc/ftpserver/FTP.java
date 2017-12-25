@@ -1,5 +1,6 @@
 package com.hzgc.ftpserver;
 
+import com.hzgc.ftpserver.queue.DataProcess;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.ftpserver.command.CommandFactoryFactory;
 import com.hzgc.ftpserver.filesystem.nativefs.NativeFileSystemFactory;
@@ -77,5 +78,6 @@ public class FTP extends ClusterOverFtp {
         FTP ftp = new FTP();
         ftp.loadConfig();
         ftp.startFtpServer();
+        DataProcess.reader();
     }
 }
