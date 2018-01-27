@@ -19,6 +19,8 @@
 
 package com.hzgc.ftpserver.command.impl;
 
+import com.hzgc.ftpserver.captureSubscription.CaptureSubscriptionObject;
+import com.hzgc.ftpserver.captureSubscription.MQSwitchImpl;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.ftpserver.queue.BufferQueue;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
@@ -51,6 +54,8 @@ import java.util.concurrent.BlockingQueue;
 public class STOR extends AbstractCommand {
 
     private final Logger LOG = LoggerFactory.getLogger(STOR.class);
+
+    private CaptureSubscriptionObject subscriptionObject = new CaptureSubscriptionObject();
 
     /**
      * Execute command.
@@ -164,12 +169,16 @@ public class STOR extends AbstractCommand {
                             String ipcID = map.get("ipcID");
                             String timeStamp = map.get("time");
 
-                            //拼装ftpUrl (带主机名的ftpUrl)
-                            String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
-                            //获取ftpUrl (带IP地址的ftpUrl)
-                            String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
-                            //发送到rocketMQ
-                            rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
+                            //TODO 创建MQ数据开关
+                            List<String> ipcIdList = subscriptionObject.getIpcIdList();
+                            if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)){
+                                //拼装ftpUrl (带主机名的ftpUrl)
+                                String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
+                                //获取ftpUrl (带IP地址的ftpUrl)
+                                String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
+                                //发送到rocketMQ
+                                rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
+                            }
                         }
                     }
                 }

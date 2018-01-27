@@ -42,13 +42,13 @@ public class RocketMQProducer implements Serializable {
                 producer.setRetryAnotherBrokerWhenNotStoreOK(true);
                 producer.setNamesrvAddr(namesrvAddr);
                 producer.start();
-                LOG.info("producer started...");
+                LOG.info("RocketMQProducer started...");
             } else {
-                LOG.error("parameter init error");
-                throw new Exception("parameter init error");
+                LOG.error("RocketMQProducer param init error");
+                throw new Exception("RocketMQProducer param init error");
             }
         } catch (Exception e) {
-            LOG.error("producer init error...");
+            LOG.error("RocketMQProducer init error...");
             throw new RuntimeException(e);
         } finally {
             IOUtil.closeStream(fis);

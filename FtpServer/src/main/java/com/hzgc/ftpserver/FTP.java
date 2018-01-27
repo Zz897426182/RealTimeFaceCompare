@@ -1,5 +1,7 @@
 package com.hzgc.ftpserver;
 
+import com.hzgc.ftpserver.captureSubscription.MQSwitchInit;
+import com.hzgc.ftpserver.captureSubscription.MQSwitchStart;
 import com.hzgc.ftpserver.util.LoggerConfig;
 import com.hzgc.ftpserver.queue.DataProcess;
 import com.hzgc.util.common.FileUtil;
@@ -24,6 +26,9 @@ public class FTP extends ClusterOverFtp {
      */
     static {
         new LoggerConfig();
+        //TODO 创建MQ数据开关
+        MQSwitchInit init = new MQSwitchInit();
+        init.create();
     }
 
     @Override
@@ -81,5 +86,7 @@ public class FTP extends ClusterOverFtp {
         ftp.startFtpServer();
         DataProcess data = new DataProcess();
         data.reader();
+        MQSwitchStart mqSwitch = new MQSwitchStart();
+        mqSwitch.start();
     }
 }
