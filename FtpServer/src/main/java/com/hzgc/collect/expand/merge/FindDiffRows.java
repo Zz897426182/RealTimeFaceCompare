@@ -34,7 +34,6 @@ class FindDiffRows {
                 notProList.add(allRows.get(0));
             }
         } else {
-            LOG.info("The unionAllRows size isn't None, start testing...");
             Collections.sort(allRows);
             for (int i = 1; i <= allRows.size() - 2; i++) {
                 LogEvent rowEvent = JSONHelper.toObject(allRows.get(i), LogEvent.class);
@@ -61,7 +60,6 @@ class FindDiffRows {
             if (lastEventCount.getCount() != eventCount.getCount()) {
                 notProList.add(allRows.get(allRows.size() - 1));
             }
-            LOG.info("Testing unionAllRows success..");
         }
         Collections.sort(notProList, new ListComparator());
         return notProList;

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -52,7 +53,7 @@ public class MergeUtil {
      * @param path 需扫描的根目录
      * @return 该根目录下所有文件的FileList
      */
-    List<String> listAllFileAbsPath(String path) {
+    public List<String> listAllFileAbsPath(String path) {
         List<String> allFilePath = new ArrayList<>();
         try {
             if (path != null && !Objects.equals(path, "")) {
@@ -215,7 +216,7 @@ public class MergeUtil {
      * @param filePaths 两个文件的路径
      * @return 包含两个文件中所有内容的List
      */
-    List<String> getAllContentFromFile(String... filePaths) {
+    public List<String> getAllContentFromFile(String... filePaths) {
         //最终添加到的List
         List<String> allContentList = new ArrayList<>();
         //记录入参中符合文件路径格式的参数个数（入参可能为文件夹路径）
@@ -236,7 +237,7 @@ public class MergeUtil {
                 if (count == filePaths.length) {
                     for (String filePath : filePaths) {
                         //先将每个文件的内容，导入到各自的contentList中
-                        List<String> contentList = Files.readAllLines(Paths.get(filePath));
+                        List<String> contentList = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
                         //再导入到最终的allContentList中
                         allContentList.addAll(contentList);
                     }

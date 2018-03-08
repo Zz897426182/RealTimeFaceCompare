@@ -3,11 +3,12 @@ package com.hzgc.collect.ftp;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.hzgc.collect.expand.util.FTPDownloadUtils;
+import org.junit.Test;
 
 import java.io.File;
 import java.util.Random;
 
-public class UpDataToFtp {
+public class SendDataTo2222Ftp {
 
     //counter：计数器；在需要统计数据的位置调用inc()和dec()方法。
     private static MetricRegistry metricRegistry = new MetricRegistry();
@@ -41,7 +42,7 @@ public class UpDataToFtp {
                     //basePath FTP服务器基础目录
                     //filePath FTP服务器文件存放路径。例如分日期存放：/2015/01/01。
                     //文件的路径为 basePath + filePath
-                    FTPDownloadUtils.upLoadFromProduction("172.18.18.163", 2121, "admin",
+                    FTPDownloadUtils.upLoadFromProduction("172.18.18.163", 2222, "admin",
                             "123456", "", filePath.toString(), fileName, originFilePath);
 
                     System.out.println(filePath);
@@ -57,7 +58,10 @@ public class UpDataToFtp {
     }
 
     public static void main(String[] args) {
-        upDataTest("/home/test/picFrom",20,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
+        long start = System.currentTimeMillis();
+        upDataTest("/home/test/picFrom",1,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println(System.currentTimeMillis() - start);
     }
 
 

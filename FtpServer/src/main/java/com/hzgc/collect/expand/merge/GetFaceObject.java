@@ -20,7 +20,8 @@ class GetFaceObject {
         if (row != null && row.length() != 0) {
             LogEvent event = JSONHelper.toObject(row, LogEvent.class);
             // 路径中不包含/opt/ftpdata
-            String path =event.getFtpPath();
+            String portPath =event.getFtpPath();
+            String path = portPath.split("://")[1].substring(portPath.split("://")[1].indexOf("/"));
             // 路径中包含/opt/ftpdata/
             String absolutePath = event.getAbsolutePath();
 
