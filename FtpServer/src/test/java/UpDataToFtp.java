@@ -13,10 +13,9 @@ public class UpDataToFtp {
     private final static Counter counter = metric.counter("counter");
 
     /**
-     *
-     * @param path 文件路径
+     * @param path    文件路径
      * @param loopNum 循环次数
-     * @param IpcId 设备ID
+     * @param IpcId   设备ID
      */
     public static void upDataTest(String path, int loopNum, String IpcId) {
         File file = new File(path);

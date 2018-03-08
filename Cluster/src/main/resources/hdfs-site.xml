@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    
+    <!--指定hdfs的nameservice为hzgc，需要和core-site.xml中的保持一致 -->
+    <property>
+    <name>dfs.nameservices</name>
+    <value>hzgc</value>
+    </property>
+
+    <!-- hzgc下面有两个NameNode，分别是nn1，nn2， -->
+    <property>
+    <name>dfs.ha.namenodes.hzgc</name>
+    <value>nn1,nn2</value>
+    </property>
+    
+    <!-- nn1的RPC通信地址 -->
+    <property>
+    <name>dfs.namenode.rpc-address.hzgc.nn1</name>
+    <value>s103:9000</value>
+    </property>
+
+    <!-- nn1的http通信地址 -->
+    <property>
+    <name>dfs.namenode.http-address.hzgc.nn1</name>
+        <value>s103:50070</value>
+    </property>
+    
+    <!-- nn2的RPC通信地址 -->
+    <property>
+           <name>dfs.namenode.rpc-address.hzgc.nn2</name>
+    <value>s104:9000</value>
+    </property>
+    
+    <!-- nn2的http通信地址 -->
+    <property>
+    <name>dfs.namenode.http-address.hzgc.nn2</name>
+    <value>s104:50070</value>
+    </property>
+    
+    <!-- 指定NameNode的元数据在JournalNode上的存放位置 -->
+    <property>
+    <name>dfs.namenode.shared.edits.dir</name>
+    <value>qjournal://s108:8485;s104:8485;s103:8485;/hzgc</value>
+    </property>
+
+    <!-- 指定JournalNode在本地磁盘存放数据的位置 -->
+    <property>
+    <name>dfs.journalnode.edits.dir</name>
+    <value>/opt/hzgc/bigdata/Hadoop/hadoop/dfs_journalnode_edits_dir</value>
+    </property>
+
+    <!-- 开启NameNode失败自动切换 -->
+    <property>
+    <name>dfs.ha.automatic-failover.enabled</name>
+    <value>true</value>
+    </property>
+
+    <!-- 配置失败自动切换实现方式 -->
+    <property>
+    <name>dfs.client.failover.proxy.provider.hzgc</name>
+    <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+    </property>
+ 
+    <!-- 配置隔离机制方法，多个机制用换行分割，即每个机制暂用一行-->
+    <property>
+    <name>dfs.ha.fencing.methods</name>
+    <value>
+        sshfence
+        shell(/bin/true)
+    </value>
+    </property>
+
+    <!-- 使用sshfence隔离机制时需要ssh免登陆 -->
+    <property>
+    <name>dfs.ha.fencing.ssh.private-key-files</name>
+    <value>/root/.ssh/id_rsa</value>
+    </property>
+    
+    <!-- 配置sshfence隔离机制超时时间 -->
+    <property>
+    <name>dfs.ha.fencing.ssh.connect-timeout</name>
+    <value>30000</value>
+    </property>
+
+    <property>
+        <name>dfs.permissions</name>
+        <value>false</value>
+    </property>
+    
+    <!-- 指定DataNode存储block的副本数量。默认值是3个 -->
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+    
+    <!-- 安全模式相关的配置 -->
+    <!-- 最小的文件block副本数量，默认为1 -->
+    <property>
+        <name>dfs.namenode.replication.min</name>
+        <value>1</value>
+    </property>
+    
+    <!-- 安全模式相关的配置 -->
+    <!-- 副本数达到最小要求的block占系统总block数的百分比，当实际比例超过该配置后， -->
+    <!-- 才能离开安全模式（但是还需要其他条件也满足）。默认为0.999f，也就是说 -->
+    <!-- 符合最小副本数要求的block占比超过99.9%时，并且其他条件也满足才能离开安全模式。 -->
+    <!-- 如果为小于等于0，则不会等待任何副本达到要求即可离开。如果大于1，则永远处于安全模式。 -->
+    <property>
+        <name>dfs.namenode.safemode.threshold-pct</name>
+        <value>0</value>
+    </property>
+    
+    <!-- 安全模式相关的配置 -->
+    <!-- 离开安全模式的最小可用（alive）datanode数量要求，默认为0. -->
+    <!-- 也就是即使所有datanode都不可用，仍然可以离开安全模式。 -->
+    <property>
+        <name>dfs.namenode.safemode.min.datanodes</name>
+        <value>0</value>
+    </property>
+    
+    <!-- 安全模式相关的配置 -->
+    <!-- 当集群可用block比例、可用datanode都达到要求之后，如果在extension配置的时间段之后依然能满足要求， -->
+    <!-- 此时集群才离开安全模式。单位为毫秒，默认为1.即当满足条件并且能够维持1毫秒之后，离开安全模式。  -->
+    <!-- 这个配置主要是对集群的稳定程度做进一步的确认。避免达到要求后马上又不符合安全标准。 -->
+    <property>
+        <name>dfs.namenode.safemode.extension</name>
+        <value>1</value>
+    </property>
+    
+    
+</configuration>

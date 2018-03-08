@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<configuration>
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://hzgc/hbase</value>
+    </property>
+    <property>
+        <name>hbase.master.port</name>
+        <value>60000</value>
+    </property>
+    <property>
+        <name>hbase.regionserver.port</name>
+        <value>16020</value>
+    </property>
+    <property>
+        <name>hbase.regionserver.info.port</name>
+        <value>16030</value>
+    </property>
+    <property>
+        <name>hbase.master.info.port</name>
+        <value>60010</value>
+    </property>
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.property.clientPort</name>
+        <value>2181</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>s108:2181,s104:2181,s103:2181,s103:2181</value>
+    </property>
+    <property>
+        <name>hbase.tmp.dir</name>
+        <value>/opt/hzgc/bigdata/HBase/hbase/tmp</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.property.dataDir</name>
+        <value>/opt/hzgc/bigdata/HBase/hbase/hbase_zk_datadir</value>
+    </property>
+    <property>
+        <name>hbase.master.maxclockskew</name>
+        <value>300000</value>
+    </property>
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+
+    <!--*******************************集群性能调优相关参数*********************************-->
+
+    <!--RegionServer的请求处理IO线程数-->
+    <property>
+        <name>hbase.regionserver.handler.count</name>
+        <value>10</value>
+    </property>
+
+    <!--在当前ReigonServer上单个Reigon的最大存储空间，单个Region超过该值时，这个Region会被自动split成更小的region。
+         设置值为256M-->
+    <property>
+        <name>hbase.hregion.max.filesize</name>
+        <value>268435456</value>
+    </property>
+
+    <!--配置major合并的间隔时间，默认为1天，可设置为0，禁止自动的major合并-->
+    <property>
+        <name>hbase.hregion.majorcompaction</name>
+        <value>1</value>
+    </property>
+
+    <!--HStore的storeFile数量>= compactionThreshold配置的值，则可能会进行compact，默认值为3，
+    可以调大，比如设置为6，在定期的major compact中进行剩下文件的合并。-->
+    <property>
+        <name>hbase.hstore.compactionThreshold</name>
+        <value>3</value>
+    </property>
+
+    <!--在flush时，当一个region中的Store（Coulmn Family）内有超过配置值（7）个storefile时，
+    则block所有的写请求进行compaction，以减少storefile数量。-->
+    <property>
+        <name>hbase.hstore.blockingStoreFiles</name>
+        <value>7</value>
+    </property>
+
+    <!--RS所有memstore占用内存在总内存中的upper比例，当达到该值，则会从整个RS中找出最需要flush的region进行flush，
+    直到总内存比例降至该数限制以下，并且在降至限制比例以下前将阻塞所有的写memstore的操作-->
+    <property>
+        <name>hbase.regionserver.global.memstore.upperLimit</name>
+        <value>0.4</value>
+    </property>
+
+    <!--RS的所有memstore占用内存在总内存中的lower比例，当达到该值，则会从整个RS中找出最需要flush的region进行flush，
+    配置时需结合memstore.upperLimit和block cache的配置。-->
+    <property>
+        <name>hbase.regionserver.global.memstore.lowerLimit</name>
+        <value>0.35</value>
+    </property>
+
+    <!--RS的block cache的内存大小限制-->
+    <property>
+        <name>file.block.cache.size</name>
+        <value>0.25</value>
+    </property>
+
+    <!--默认值128M，单位字节，超过将被flush到hdfs-->
+    <property>
+        <name>hbase.hregion.memstore.flush.size</name>
+        <value>134217728</value>
+    </property>
+
+    <!--默认值2，如果memstore的内存大小已经超过了hbase.hregion.memstore.flush.size的2倍，则会block该region的所有请求，
+    进行flush，阻塞memstore的写操作，释放内存直到降至该值以下。-->
+    <property>
+        <name>hbase.hregion.memstore.block.multiplier</name>
+        <value>2</value>
+    </property>
+
+    <!--在index写入的时候允许put无根（non-root）的多级索引块到block cache里，默认false-->
+    <property>
+        <name>hfile.block.index.cacheonwrite</name>
+        <value>FALSE</value>
+    </property>
+
+    <!---->
+    <property>
+        <name>io.storefile.bloom.cacheonwrite</name>
+        <value>FALSE</value>
+    </property>
+
+    <!--控制最大的region数量，超过则不可以进行split操作，默认是6000，
+    可设置为1，禁止自动的split，通过人工，或者写脚本在集群空闲时执行。-->
+    <property>
+        <name>hbase.regionserver.regionSplitLimit</name>
+        <value>1000</value>
+    </property>
+
+    <!--写缓存大小，默认为2M，设置值为6M-->
+    <property>
+        <name>hbase.client.write.buffer</name>
+        <value>6291456</value>
+    </property>
+
+    <!--scan缓存，默认为1，通常是设置业务需求的一次查询的数据条数，
+    比如：业务特点决定了一次最多100条，则可以设置为100-->
+    <property>
+        <name>hbase.client.scanner.caching</name>
+        <value>100</value>
+    </property>
+
+    <!--storefile的读缓存占用Heap的大小百分比，0.2表示20%。该值直接影响数据读的性能。-->
+    <property>
+        <name>hfile.block.cache.size</name>
+        <value>0.2</value>
+    </property>
+
+    <!--减少因内存碎片导致的Full GC，提高整体性能。-->
+    <property>
+        <name>hbase.hregion.memstore.mslab.enabled</name>
+        <value>TRUE</value>
+    </property>
+
+    <!--zk的最大连接数，默认为300，可配置上千-->
+    <property>
+        <name>hbase.zookeeper.property.maxClientCnxns</name>
+        <value>300</value>
+    </property>
+
+</configuration>

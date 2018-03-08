@@ -3,7 +3,7 @@ package com.hzgc.dubbo.clustering;
 import java.io.Serializable;
 
 /**
- * 新增告警信息，包含大小图url，告警时间
+ * 某个聚类中新增告警详细信息，包含大小图url，告警时间（彭聪）
  */
 public class AlarmInfo implements Serializable {
     /**
@@ -15,7 +15,7 @@ public class AlarmInfo implements Serializable {
      */
     private String burl;
     /**
-     * 告警时间
+     * 告警时间（MySQL中保存的告警时间）
      */
     private String alarmTime;
 

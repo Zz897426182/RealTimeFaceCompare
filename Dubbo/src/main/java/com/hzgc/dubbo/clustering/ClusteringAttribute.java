@@ -3,7 +3,7 @@ package com.hzgc.dubbo.clustering;
 import java.io.Serializable;
 
 /**
- * 聚类信息，包含显示图片url，最早、晚出现时间及ipcId和次数
+ * 每个聚类的信息，每个聚类作为一个对象，包含显示图片url，最早、晚出现时间及ipcId和该聚类中图片数量count(彭聪)
  */
 public class ClusteringAttribute implements Serializable {
     /**
