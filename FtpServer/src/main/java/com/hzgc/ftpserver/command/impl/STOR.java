@@ -47,9 +47,9 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
- *
+ * <p>
  * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
- *
+ * <p>
  * This command causes the server-DTP to accept the data transferred via the
  * data connection and to store the data as a file at the server site. If the
  * file specified in the pathname exists at the server site, then its contents
@@ -179,8 +179,7 @@ public class STOR extends AbstractCommand {
                             //TODO 抓拍订阅及演示功能
                             //List<String> ipcIdList = subscriptionObject.getIpcIdList();
                             List<String> ipcIdList = FTPShow.getIpcIdList();
-                            LOG.info("STOR --> IPCID :" + ipcIdList);
-                            if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)){
+                            if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)) {
                                 //拼装ftpUrl (带主机名的ftpUrl)
                                 String ftpHostNameUrl = FtpUtil.filePath2FtpUrl(fileName);
                                 //获取ftpUrl (带IP地址的ftpUrl)
@@ -198,7 +197,7 @@ public class STOR extends AbstractCommand {
 
                 // attempt to close the output stream so that errors in 
                 // closing it will return an error to the client (FTPSERVER-119) 
-                if(outStream != null) {
+                if (outStream != null) {
                     outStream.close();
                 }
 
@@ -235,15 +234,22 @@ public class STOR extends AbstractCommand {
                     LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
                 } else {
                     if (fileName.contains(".jpg") && faceNum > 0) {
-                        BufferQueue bufferQueue = context.getBufferQueue();
-                        BlockingQueue<String> queue = bufferQueue.getQueue();
-                        try {
-                            queue.put(fileName);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        Map<String, String> map = FtpUtil.getFtpPathMessage(fileName);
+                        //若获取不到信息，则不发rocketMQ和Kafka
+                        if (!map.isEmpty()) {
+                            String ipcID = map.get("ipcID");
+                            List<String> ipcIdList = FTPShow.getIpcIdList();
+                            if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)) {
+                                BufferQueue bufferQueue = context.getBufferQueue();
+                                BlockingQueue<String> queue = bufferQueue.getQueue();
+                                try {
+                                    queue.put(fileName);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                LOG.info("Push to queue success,queue size : " + queue.size());
+                            }
                         }
-                        LOG.info("Push to queue success,queue size : " + queue.size());
-
                     }
                 }
             }

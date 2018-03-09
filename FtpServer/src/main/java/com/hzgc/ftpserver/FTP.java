@@ -83,6 +83,7 @@ public class FTP extends ClusterOverFtp {
         /*MQStart mqStart = new MQStart();
         mqStart.start();*/
         log.info("****************** FTP SERVER STARTED ******************");
+        log.info("ipcid:" + FTPShow.getIpcIdList());
     }
 
     public static Map<Integer, Integer> getPidMap() {
