@@ -179,7 +179,16 @@ public class STOR extends AbstractCommand {
                             //TODO 抓拍订阅及演示功能
                             //List<String> ipcIdList = subscriptionObject.getIpcIdList();
                             List<String> ipcIdList = FTPShow.getIpcIdList();
-                            if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)) {
+                            if (FTPShow.isIsShow()){
+                                if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)) {
+                                    //拼装ftpUrl (带主机名的ftpUrl)
+                                    String ftpHostNameUrl = FtpUtil.filePath2FtpUrl(fileName);
+                                    //获取ftpUrl (带IP地址的ftpUrl)
+                                    String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
+                                    //发送到rocketMQ
+                                    rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
+                                }
+                            }else if (!FTPShow.isIsShow()){
                                 //拼装ftpUrl (带主机名的ftpUrl)
                                 String ftpHostNameUrl = FtpUtil.filePath2FtpUrl(fileName);
                                 //获取ftpUrl (带IP地址的ftpUrl)
@@ -239,7 +248,18 @@ public class STOR extends AbstractCommand {
                         if (!map.isEmpty()) {
                             String ipcID = map.get("ipcID");
                             List<String> ipcIdList = FTPShow.getIpcIdList();
-                            if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)) {
+                            if (FTPShow.isIsShow()){
+                                if (!ipcIdList.isEmpty() && ipcIdList.contains(ipcID)) {
+                                    BufferQueue bufferQueue = context.getBufferQueue();
+                                    BlockingQueue<String> queue = bufferQueue.getQueue();
+                                    try {
+                                        queue.put(fileName);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    LOG.info("Push to queue success,queue size : " + queue.size());
+                                }
+                            }else if (!FTPShow.isIsShow()){
                                 BufferQueue bufferQueue = context.getBufferQueue();
                                 BlockingQueue<String> queue = bufferQueue.getQueue();
                                 try {

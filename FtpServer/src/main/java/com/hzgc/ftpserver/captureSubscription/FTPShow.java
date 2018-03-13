@@ -14,6 +14,7 @@ import java.util.Properties;
  */
 public class FTPShow {
     private static List<String> ipcIdList = new ArrayList<>();
+    private static boolean isShow;
 
     public FTPShow(){
         List<String> list = new ArrayList<>();
@@ -21,6 +22,7 @@ public class FTPShow {
         try {
             FileInputStream fis = new FileInputStream(FileUtil.loadResourceFile("rocketmq.properties"));
             properties.load(fis);
+            isShow = Boolean.parseBoolean(properties.getProperty("isshow"));
             String show_ipcid = properties.getProperty("show_ipcid");
             list = Arrays.asList(show_ipcid.split(","));
         } catch (IOException e) {
@@ -35,5 +37,13 @@ public class FTPShow {
 
     private void setIpcIdList(List<String> ipcIdList) {
         FTPShow.ipcIdList = ipcIdList;
+    }
+
+    public static boolean isIsShow() {
+        return isShow;
+    }
+
+    public void setIsShow(boolean isShow) {
+        FTPShow.isShow = isShow;
     }
 }
