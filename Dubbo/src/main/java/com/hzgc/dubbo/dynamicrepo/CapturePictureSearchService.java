@@ -19,15 +19,11 @@ public interface CapturePictureSearchService {
     SearchResult search(SearchOption option);
 
     /**
-     * 查询历史记录
      *
-     * @param searchId   搜索的 id（rowkey）
-     * @param offset     从第几条开始
-     * @param count      条数
-     * @param sortParams 排序参数
+     * @param resultOption 历史结果查询参数对象
      * @return SearchResult对象
      */
-    SearchResult getSearchResult(String searchId, int offset, int count, String sortParams);
+    SearchResult getSearchResult(SearchResultOption resultOption);
 
     /**
      * 查看人、车图片有哪些属性
@@ -53,9 +49,10 @@ public interface CapturePictureSearchService {
      * 根据条件筛选抓拍图片，并返回图片对象
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
-     * @return SearchResult符合条件的图片对象
+     * @param ipcId ipcId用来筛选各个设备下所返回的图片
+     * @return List<SearchResult>符合条件的图片对象以list形式返回
      */
-    SearchResult getCaptureHistory(SearchOption option);
+    List<SearchResult> getCaptureHistory(SearchOption option,List<String> ipcId);
 
     /**
      * 抓拍属性统计查询 (刘思阳)

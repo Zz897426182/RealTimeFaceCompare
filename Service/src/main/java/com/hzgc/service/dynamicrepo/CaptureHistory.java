@@ -23,10 +23,9 @@ class CaptureHistory {
         ElasticSearchHelper.getEsClient();
     }
 
-
-    SearchResult getRowKey_history(SearchOption option) {
+    List<SearchResult> getRowKey_history(SearchOption option,List<String> ipcId) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder_history(option);
-        return dealWithSearchRequestBuilder_history(searchRequestBuilder);
+        return dealWithSearchRequestBuilder_history(searchRequestBuilder,ipcId);
     }
 
     private SearchRequestBuilder getSearchRequestBuilder_history(SearchOption option) {
@@ -53,11 +52,11 @@ class CaptureHistory {
         int count = option.getCount();
         LOG.info("count is:" + count);
         //排序条件
-        String sortParams = option.getSortParams();
-        String flag = String.valueOf(sortParams.charAt(0));
-        String sortparam = sortParams.substring(1);
+        List<SortParam> sortParams = option.getSortParams();
+        SortParam s = sortParams.get(0);
+        String flag = s.name();
         String px;
-        if (flag.equals("-")) {
+        if (flag.equals("TIMEDESC")) {
             px = "desc";
         } else {
             px = "asc";
@@ -131,40 +130,88 @@ class CaptureHistory {
                 .setTypes(type)
                 .setFrom(offset)
                 .setSize(count)
-                .addSort(sortparam, SortOrder.fromString(px));
+                .addSort("timestamp", SortOrder.fromString(px));
         return requestBuilder.setQuery(totalBQ);
     }
 
-    private SearchResult dealWithSearchRequestBuilder_history(SearchRequestBuilder searchRequestBuilder) {
+
+
+    private List<SearchResult> dealWithSearchRequestBuilder_history(SearchRequestBuilder searchRequestBuilder,List<String> ipcId) {
         // 最终要返回的值
-        SearchResult result = new SearchResult();
+        List<SearchResult> resultList = new ArrayList<>();
         // requestBuilder 为空，则返回空
-        if (searchRequestBuilder == null) {
-            return result;
-        }
-        // 通过SearchRequestBuilder 获取response 对象。
-        SearchResponse searchResponse = searchRequestBuilder.get();
-        // 滚动查询
-        SearchHits searchHits = searchResponse.getHits();
-        result.setTotal((int) searchHits.getTotalHits());
-        SearchHit[] hits = searchHits.getHits();
-        List<CapturedPicture> persons = new ArrayList<>();
-        CapturedPicture capturePicture;
-        if (hits.length > 0) {
-            for (SearchHit hit : hits) {
-                capturePicture = new CapturedPicture();
-                String surl = hit.getId();
-                String burl = FtpUtils.surlToBurl(surl);
-                String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
-                String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
-                capturePicture.setSurl(FtpUtils.getFtpUrl(surl));
-                capturePicture.setBurl(FtpUtils.getFtpUrl(burl));
-                capturePicture.setIpcId(ipcid);
-                capturePicture.setTimeStamp(timestamp);
-                persons.add(capturePicture);
+        if (ipcId == null){
+            SearchResult result = new SearchResult();
+            List<SingleResult> results = new ArrayList<>();
+            SingleResult singleResult = new SingleResult();
+            if (searchRequestBuilder == null) {
+                return resultList;
+            }
+            // 通过SearchRequestBuilder 获取response 对象。
+            SearchResponse searchResponse = searchRequestBuilder.get();
+            // 滚动查询
+            SearchHits searchHits = searchResponse.getHits();
+            SearchHit[] hits = searchHits.getHits();
+            List<CapturedPicture> persons = new ArrayList<>();
+            CapturedPicture capturePicture;
+            if (hits.length > 0) {
+                for (SearchHit hit : hits) {
+                    capturePicture = new CapturedPicture();
+                    String surl = hit.getId();
+                    String burl = FtpUtils.surlToBurl(surl);
+                    String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
+                    String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
+                    capturePicture.setSurl(FtpUtils.getFtpUrl(surl));
+                    capturePicture.setBurl(FtpUtils.getFtpUrl(burl));
+                    capturePicture.setIpcId(ipcid);
+                    capturePicture.setTimeStamp(timestamp);
+                    persons.add(capturePicture);
+                }
+            }
+            singleResult.setPictures(persons);
+            results.add(singleResult);
+            result.setResults(results);
+            resultList.add(result);
+        }else {
+            if (searchRequestBuilder == null) {
+                return resultList;
+            }
+            for (String ipcid : ipcId){
+                SearchResult result = new SearchResult();
+                List<SingleResult> results = new ArrayList<>();
+                SingleResult singleResult = new SingleResult();
+                List<GroupByIpc> picturesByIpc = new ArrayList<>();
+                GroupByIpc groupByIpc = new GroupByIpc();
+                SearchResponse searchResponse = searchRequestBuilder.get();
+                SearchHits searchHits = searchResponse.getHits();
+                SearchHit[] hits = searchHits.getHits();
+                List<CapturedPicture> persons = new ArrayList<>();
+                CapturedPicture capturePicture;
+                if (hits.length > 0) {
+                    for (SearchHit hit : hits) {
+                        capturePicture = new CapturedPicture();
+                        String surl = hit.getId();
+                        String burl = FtpUtils.surlToBurl(surl);
+                        String ipc = (String) hit.getSource().get(DynamicTable.IPCID);
+                        String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
+                        capturePicture.setSurl(FtpUtils.getFtpUrl(surl));
+                        capturePicture.setBurl(FtpUtils.getFtpUrl(burl));
+                        capturePicture.setIpcId(ipc);
+                        capturePicture.setTimeStamp(timestamp);
+                        if (ipcid.equals(ipc)){
+                            groupByIpc.setIpc(ipc);
+                            picturesByIpc.add(groupByIpc);
+                            persons.add(capturePicture);
+                            singleResult.setPicturesByIpc(picturesByIpc);
+                            singleResult.setPictures(persons);
+                            results.add(singleResult);
+                            result.setResults(results);
+                        }
+                    }
+                }
+                resultList.add(result);
             }
         }
-        result.setPictures(persons);
-        return result;
+        return resultList;
     }
 }

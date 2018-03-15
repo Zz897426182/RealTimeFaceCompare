@@ -1,25 +1,15 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
-/**
- * 搜索结果
- */
 public class SearchResult implements Serializable {
-    /**
-     * 本次搜索的 id
-     */
-    private String searchId;
-    /**
-     * 搜索结果数
-     */
-    private int total;
-    /**
-     * 匹配到的结果列表
-     */
+    private String searchId;    //总搜索ID
 
-    private List<CapturedPicture> pictures;
+    private List<SingleResult> results;    //子结果集集合
+
+    private String searchType;    //搜索类型
 
     public String getSearchId() {
         return searchId;
@@ -29,28 +19,29 @@ public class SearchResult implements Serializable {
         this.searchId = searchId;
     }
 
-    public int getTotal() {
-        return total;
+    public List<SingleResult> getResults() {
+        return results;
     }
 
-    public void setTotal(int total) {
-        this.total = total;
+    public void setResults(List<SingleResult> results) {
+        this.results = results;
     }
 
-    public List<CapturedPicture> getPictures() {
-        return pictures;
+    public String getSearchType() {
+        return searchType;
     }
 
-    public void setPictures(List<CapturedPicture> pictures) {
-        this.pictures = pictures;
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
     }
 
     @Override
     public String toString() {
-        return "SearchResult{" +
-                "searchId='" + searchId + '\'' +
-                ", total=" + total +
-                ", pictures=" + pictures +
-                '}';
+        return "Search ID is:"
+                + this.searchId
+                + ", search type is:"
+                + this.searchType
+                + ", Singleresult " + Arrays.toString(results.toArray());
     }
 }
+

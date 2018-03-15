@@ -80,4 +80,5 @@ public class DynamicTable implements Serializable {
     //hive中特征值比对udf函数
     static final String FUNCTION_NAME = "compare";
 
+    static final String GROUP_FIELD = "id";
 }

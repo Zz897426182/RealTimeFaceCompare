@@ -4,14 +4,8 @@ import com.hzgc.dubbo.attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.util.HBaseHelper;
-import com.hzgc.service.util.HBaseUtil;
 import com.hzgc.jni.NativeFunction;
-import com.hzgc.util.common.ObjectUtil;
 import com.hzgc.util.common.UuidUtil;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -20,7 +14,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -32,7 +25,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
-        NativeFunction.init();
+//        NativeFunction.init();
     }
 
     /**
@@ -51,68 +44,59 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             //搜索类型 是人还是车
             //设置查询Id
             String searchId = UuidUtil.setUuid();
-            LOG.info("generate current query id:[" + searchId + "]");
+            LOG.info("Generate current query id:[" + searchId + "]");
             //查询的对象库是人
-            if (option.getImage() != null || option.getImageId() != null) {
-                //根据上传的图片查询
-                searchResult = realTimeFaceCompareBySparkSQL.pictureSearchBySparkSQL(option, searchId);
+            if (option.getImages() != null && option.getImages().size() > 0) {
+                if (option.getThreshold() != 0.0) {
+                    //根据上传的图片查询
+                    searchResult = realTimeFaceCompareBySparkSQL.pictureSearchBySparkSQL(option, searchId);
+                } else {
+                    LOG.warn("The threshold is null");
+                }
             } else {
-                //无图无imageId,通过其他参数查询
-                searchResult = getCaptureHistory(option);
+                return null;
             }
         } else {
-            LOG.error("search parameter option is null");
+            LOG.error("Search parameter option is null");
         }
-        LOG.info("search total time is:" + (System.currentTimeMillis() - start));
+        LOG.info("Search total time is:" + (System.currentTimeMillis() - start));
         return searchResult;
     }
 
     /**
-     * 获取查询结果
-     *
-     * @param searchId 搜索的 id（searchId）（乔凯峰）
-     * @param offset   从第几条开始
-     * @param count    条数
+     * @param resultOption 历史结果查询参数对象
      * @return SearchResult对象
      */
     @Override
-    public SearchResult getSearchResult(String searchId, int offset, int count, String sortParams) {
-        SearchResult searchResult = new SearchResult();
-        if (null != searchId && !"".equals(searchId)) {
-            List<CapturedPicture> capturedPictureList;
-            Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
-            Get get = new Get(Bytes.toBytes(searchId));
-            searchResult.setSearchId(searchId);
-            Result result = null;
-            try {
-                result = searchResTable.get(get);
-                HBaseUtil.closTable(searchResTable);
-            } catch (IOException e) {
-                e.printStackTrace();
-                LOG.info("no result get by searchId[" + searchId + "]");
-            }
-            if (result != null) {
-                String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
-                byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-                capturedPictureList = (List<CapturedPicture>) ObjectUtil.byteToObject(searchMessage);
-                switch (searchType) {
+    public SearchResult getSearchResult(SearchResultOption resultOption) {
+        SearchResult searchResult = null;
+        if (resultOption.getSearchID() != null && !"".equals(resultOption.getSearchID())) {
+            searchResult = DynamicPhotoServiceHelper.getSearchRes(resultOption.getSearchID());
+            if (searchResult != null) {
+                switch (searchResult.getSearchType()) {
                     case DynamicTable.PERSON_TYPE:
-                        //结果集（capturedPictureList）分页返回
-                        searchResult = sortAndSplit(capturedPictureList, offset, count);
+                        if (resultOption.getSortParam() != null && resultOption.getSortParam().size() > 0) {
+                            DynamicPhotoServiceHelper.sortByParamsAndPageSplit(searchResult, resultOption);
+                        } else {
+                            for (SingleResult singleResult : searchResult.getResults()) {
+                                DynamicPhotoServiceHelper.pageSplit(singleResult.getPictures(), resultOption);
+                            }
+                        }
                         break;
                     case DynamicTable.CAR_TYPE:
-                        //结果集（capturedPictureList）分页返回
-                        searchResult = sortAndSplit(capturedPictureList, offset, count);
+                        LOG.error("No vehicle queries are currently supported");
                         break;
                     default:
-                        searchResult = sortAndSplit(capturedPictureList, offset, count);
-                        break;
+                        for (SingleResult singleResult : searchResult.getResults()) {
+                            DynamicPhotoServiceHelper.pageSplit(singleResult.getPictures(), resultOption);
+                        }
                 }
             } else {
-                LOG.info("get searchMessageMap null from table_searchRes");
+                LOG.error("Get query history failure");
             }
+
         } else {
-            LOG.info("searchId is null");
+            LOG.info("SearchId is null");
         }
         return searchResult;
     }
@@ -226,44 +210,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             attributeList.add(eyeglasses);
 
         } else if (type == SearchType.CAR) {
-
+            return new ArrayList<>();
         } else {
             LOG.error("method CapturePictureSearchServiceImpl.getAttribute SearchType is error.");
         }
         return attributeList;
     }
-
-    /**
-     * 排序分页 （彭聪）
-     *
-     * @param capturedPictureList 图片对象列表
-     * @param offset              起始值
-     * @param count               总条数
-     * @return 返回分页排序后的结果
-     */
-    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count) {
-        //SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
-        SearchResult tempResult = new SearchResult();
-        if (null != capturedPictureList && capturedPictureList.size() > 0) {
-            ///保存记录时已经排好序，分页返回时不需要排序，如果需要对下一页采用新的排序方式可以解除注释第一行和下面一行代码
-            //ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
-            List<CapturedPicture> subCapturePictureList;
-            if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
-                //结束行小于总数
-                subCapturePictureList = capturedPictureList.subList(offset, offset + count);
-            } else {
-                //结束行大于总数
-                subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
-            }
-            tempResult.setPictures(subCapturePictureList);
-            tempResult.setTotal(capturedPictureList.size());
-            return tempResult;
-        } else {
-            LOG.error("capturedPictureList is null");
-        }
-        return tempResult;
-    }
-
 
     /**
      * 抓拍统计查询接口（马燊偲）
@@ -279,70 +231,70 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         //CaptureCount是一个封装类，用于封装返回的结果。
         CaptureCount result = new CaptureCount();
 
-	    // 最终封装成的boolQueryBuilder 对象。
-	    BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
-	    //totalBQ = ;
+        // 最终封装成的boolQueryBuilder 对象。
+        BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
+        //totalBQ = ;
 
-	    // 设备ID 的的boolQueryBuilder
-	    BoolQueryBuilder ipcIdBQ = QueryBuilders.boolQuery();
+        // 设备ID 的的boolQueryBuilder
+        BoolQueryBuilder ipcIdBQ = QueryBuilders.boolQuery();
         //设备ID存在时的查询条件
-	    if (ipcId != null && !ipcId.equals("")) {
-		    ipcIdBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcId)); //暂支持只传一个设备
-		    totalBQ.must(ipcIdBQ);
-	    }
+        if (ipcId != null && !ipcId.equals("")) {
+            ipcIdBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcId)); //暂支持只传一个设备
+            totalBQ.must(ipcIdBQ);
+        }
 
-	    // 开始时间 的boolQueryBuilder
-	    BoolQueryBuilder startTimeBQ = QueryBuilders.boolQuery();
-	    //开始时间 存在时的查询条件
-	    if (null != startTime && !startTime.equals("")) {
-		    startTimeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime));//gte: >= 大于或等于
-		    totalBQ.must(startTimeBQ);
-	    }
+        // 开始时间 的boolQueryBuilder
+        BoolQueryBuilder startTimeBQ = QueryBuilders.boolQuery();
+        //开始时间 存在时的查询条件
+        if (null != startTime && !startTime.equals("")) {
+            startTimeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime));//gte: >= 大于或等于
+            totalBQ.must(startTimeBQ);
+        }
 
-	    // 结束时间 的boolQueryBuilder
-	    BoolQueryBuilder endTimeBQ = QueryBuilders.boolQuery();
-	    // 结束时间 存在时的查询条件
-	    if (null != endTime && !endTime.equals("")) {
-		    startTimeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).lte(endTime)); //lte: <= 小于或等于
-		    totalBQ.must(endTimeBQ);
-	    }
+        // 结束时间 的boolQueryBuilder
+        BoolQueryBuilder endTimeBQ = QueryBuilders.boolQuery();
+        // 结束时间 存在时的查询条件
+        if (null != endTime && !endTime.equals("")) {
+            startTimeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).lte(endTime)); //lte: <= 小于或等于
+            totalBQ.must(endTimeBQ);
+        }
 
         //所有判断结束后
-	    SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
-			    .prepareSearch(DynamicTable.DYNAMIC_INDEX) //指定要查询的索引名称
-			    .setTypes(DynamicTable.PERSON_INDEX_TYPE) //指定要查询的类型名称
-			    .setQuery(totalBQ) //根据查询条件qb设置查询
-			    .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC) //以时间字段降序排序
-			    .get();
+        SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
+                .prepareSearch(DynamicTable.DYNAMIC_INDEX) //指定要查询的索引名称
+                .setTypes(DynamicTable.PERSON_INDEX_TYPE) //指定要查询的类型名称
+                .setQuery(totalBQ) //根据查询条件qb设置查询
+                .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC) //以时间字段降序排序
+                .get();
 
-	    SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
-	    long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
+        SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
+        long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
 
-	    //返回结果包含的文档放在数组hits中
-	    SearchHit[] searchHits = hits.hits();
-	    //若不存在符合条件的查询结果
-	    if (totalresultcount == 0) {
-		    LOG.error("The result count is 0! Last capture time does not exist!");
-		    result.setTotalresultcount(totalresultcount);
-		    result.setLastcapturetime("None");
-	    } else {
-                /**
-                 * 获取该时间段内设备最后一次抓拍时间：
-                 * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-                 * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-                 * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-                 * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
-                 */
+        //返回结果包含的文档放在数组hits中
+        SearchHit[] searchHits = hits.hits();
+        //若不存在符合条件的查询结果
+        if (totalresultcount == 0) {
+            LOG.error("The result count is 0! Last capture time does not exist!");
+            result.setTotalresultcount(totalresultcount);
+            result.setLastcapturetime("None");
+        } else {
+            /*
+              获取该时间段内设备最后一次抓拍时间：
+              返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+              因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+              例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+              将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+             */
 
-		    //获取最后一次抓拍时间
-		    String lastcapturetime = (String) searchHits[0].getSourceAsMap().get(DynamicTable.TIMESTAMP);
+            //获取最后一次抓拍时间
+            String lastcapturetime = (String) searchHits[0].getSourceAsMap().get(DynamicTable.TIMESTAMP);
 
-		    /**
-		     * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
-            */
-		    result.setTotalresultcount(totalresultcount);
-		    result.setLastcapturetime(lastcapturetime);
-	    }
+            /*
+              返回值为：设备抓拍张数、设备最后一次抓拍时间。
+             */
+            result.setTotalresultcount(totalresultcount);
+            result.setLastcapturetime(lastcapturetime);
+        }
         return result;
     }
 
@@ -352,17 +304,14 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      *
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
-     * @return SearchResult符合条件的图片对象
+     * @param ipcId  ipcId用来筛选各个设备下所返回的图片
+     * @return List<SearchResult>符合条件的图片对象以list形式返回
      */
     @Override
-    public SearchResult getCaptureHistory(SearchOption option) {
+    public List<SearchResult> getCaptureHistory(SearchOption option, List<String> ipcId) {
         CaptureHistory captureHistory = new CaptureHistory();
         option.setSearchType(SearchType.PERSON);
-        long esStartTime = System.currentTimeMillis();
-        SearchResult searchResult = captureHistory.getRowKey_history(option);
-        long esEndTime = System.currentTimeMillis();
-        LOG.info("search " + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
-        return searchResult;
+        return captureHistory.getRowKey_history(option, ipcId);
     }
 
     /**
@@ -413,9 +362,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 LOG.error("ipcIdList is null.");
             }
         } else if (type == SearchType.CAR) {
-
+            LOG.error("No vehicle queries are currently supported");
         } else {
-            LOG.error("method CapturePictureSearchServiceImpl.captureAttributeQuery SearchType is error.");
+            LOG.error("method CapturePictureSearchServiceImpl.captureAttributeQuery SearchType is error");
         }
         return attributeCountList;
     }
