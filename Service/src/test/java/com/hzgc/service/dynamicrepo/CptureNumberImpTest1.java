@@ -15,14 +15,21 @@ import java.util.Map;
 
 public class CptureNumberImpTest1 {
     public static void main(String[] args) {
-        List<String> lists = new ArrayList<>();
-        lists.add("3K01E84PAU00083");
-        lists.add("3K01E84PAU00498");
-        lists.add("2L04129PAU01933");
-        String startTime = "2018-02-01 10:00:00";
-        String endTime = "2018-02-02 11:00:00";
-       CptureNumberImpl cptureNumber = new CptureNumberImpl();
-       Map<String,Integer> map = cptureNumber.timeSoltNumber(lists,startTime,endTime);
+        List<String> ipcid = new ArrayList<>();
+        ipcid.add("DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
+        ipcid.add("3K01E84PAU00483");
+        ipcid.add("DS-2CD2T20FD-I320160122AACH571485690");
+        ipcid.add("3B0383FPAG00883");
+        ipcid.add("offlineWarnRowKey");
+        ipcid.add("3K01E84PAU00150");
+        ipcid.add("2B007C3PAW00002");
+        ipcid.add("2L04129PAU01933");
+        ipcid.add("3K01E84PAU00083");
+        ipcid.add("3K01E84PAU00498");
+        String startTime = "2018-03-10 08:00:00";
+        String endTime = "2018-03-10 11:00:00";
+        CptureNumberImpl cptureNumber = new CptureNumberImpl();
+        Map<String,Integer> map = cptureNumber.timeSoltNumber(ipcid,startTime,endTime);
         System.out.println(map);
 //        System.out.println(Integer.MAX_VALUE);
 //        CptureNumberImpl cptureNumber = new CptureNumberImpl();

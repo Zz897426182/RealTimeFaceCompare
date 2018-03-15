@@ -41,72 +41,11 @@ public interface ObjectInfoHandler {
     ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel);
 
     /**
-     * 根据传进来的平台id  和身份证号进行查询  （外）（李第亮）
-     * @param platformId  平台ID
-     * @param IdCard  身份证号
-     * @param moHuSearch  是否模糊查询
-     * @param start  返回的查询记录中，从哪一条开始
-     * @param pageSize  需要返回的记录数
-     * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
-     */
-    ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId,
-                                                   String IdCard, boolean moHuSearch,
-                                                   int start, int pageSize);
-
-    /**
      * 根据rowkey 进行查询 （外）
      * @param rowkey  标记一条对象信息的唯一标志。
      * @return  返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
     ObjectSearchResult searchByRowkey(String rowkey);
-
-
-    /**
-     * 根据布控人手机号进行查询  （外）
-     * @param cphone 布控人手机号
-     * @param start  返回的查询记录中，从哪一条开始
-     * @param pageSize  需要返回的记录数
-     * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
-     */
-    ObjectSearchResult searchByCphone(String cphone, int start, int pageSize);
-
-
-    /**
-     * 根据布控人姓名进行查询  （外）
-     * @param creator  布控人姓名
-     * @param moHuSearch  是否模糊查询
-     * @param start  返回的查询记录中，从哪一条开始
-     * @param pageSize  需要返回的记录数
-     * @return  返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
-     */
-    ObjectSearchResult searchByCreator(String creator, boolean moHuSearch,
-                                       int start, int pageSize);
-
-    /**
-     * 根据人员信息表中的人员姓名进行查询   （外） （李第亮）
-     * @param name 根据人员姓名进行查询
-     * @param moHuSearch  是否模糊查询
-     * @param start  返回的查询记录中，从哪一条开始
-     * @param pageSize  需要返回的记录数
-     * @return  返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
-     */
-    ObjectSearchResult searchByName(String name, boolean moHuSearch,
-                                    int start, int pageSize);
-
-    /**
-     * 根据图片进行搜索，涉及特征值对比算法，以及该怎么对比。  （外） （李第亮）
-     * 需要保存这张图片和搜索出来的记录
-     * @param platformId 平台ID
-     * @param photo 图片
-     * @param threshold 阈值
-     * @param feature 特征值
-     * @param start  返回的查询记录中，从哪一条开始
-     * @param pageSize  需要返回的记录数
-     * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
-     */
-    ObjectSearchResult searchByPhotoAndThreshold(String platformId, byte[] photo,
-                                                 float threshold, String feature,
-                                                 long start, long pageSize);
 
     /**
      *  根据传进来的图片和人车标志，计算特征值，并且返回  （外） （李第亮）

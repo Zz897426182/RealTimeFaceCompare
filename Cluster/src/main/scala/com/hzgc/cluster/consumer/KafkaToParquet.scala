@@ -78,7 +78,7 @@ object KafkaToParquet {
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
       rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append)
-               .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-",""))
+               .parquet(storeAddress)
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {

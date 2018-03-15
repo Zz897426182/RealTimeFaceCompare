@@ -4,22 +4,23 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 静态库查询的时候返回的结果
+ */
 public class ObjectSearchResult implements Serializable {
-    private String searchId;  // 搜索id
+    private String searchTotalId; //总的searchId
     private int searchStatus;  // 查询成功与否状态，
-    private String photoId;  // 基础图片的图片ID
-    private long searchNums;  // 搜索出来的结果数量
-    private List<Map<String, Object>> results;  // 搜索出来的人员或者车的详细信息
+    private List<PersonSingleResult> finalResults; //最终需要返回的结果，String是分别的Id
 
     public ObjectSearchResult() {
     }
 
-    public String getSearchId() {
-        return searchId;
+    public String getSearchTotalId() {
+        return searchTotalId;
     }
 
-    public void setSearchId(String searchId) {
-        this.searchId = searchId;
+    public void setSearchTotalId(String searchTotalId) {
+        this.searchTotalId = searchTotalId;
     }
 
     public int getSearchStatus() {
@@ -30,38 +31,20 @@ public class ObjectSearchResult implements Serializable {
         this.searchStatus = searchStatus;
     }
 
-    public String getPhotoId() {
-        return photoId;
+    public List<PersonSingleResult> getFinalResults() {
+        return finalResults;
     }
 
-    public void setPhotoId(String photoId) {
-        this.photoId = photoId;
-    }
-
-    public long getSearchNums() {
-        return searchNums;
-    }
-
-    public void setSearchNums(long searchNums) {
-        this.searchNums = searchNums;
-    }
-
-    public List<Map<String, Object>> getResults() {
-        return results;
-    }
-
-    public void setResults(List<Map<String, Object>> results) {
-        this.results = results;
+    public void setFinalResults(List<PersonSingleResult> finalResults) {
+        this.finalResults = finalResults;
     }
 
     @Override
     public String toString() {
         return "ObjectSearchResult{" +
-                "searchId='" + searchId + '\'' +
-                ", searchStatus='" + searchStatus + '\'' +
-                ", photoId='" + photoId + '\'' +
-                ", searchNums=" + searchNums +
-                ", results=" + results +
+                "searchTotalId='" + searchTotalId + '\'' +
+                ", searchStatus=" + searchStatus +
+                ", finalResults=" + finalResults +
                 '}';
     }
 }
