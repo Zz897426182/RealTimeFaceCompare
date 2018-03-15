@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -236,7 +237,7 @@ public class MergeUtil {
                 if (count == filePaths.length) {
                     for (String filePath : filePaths) {
                         //先将每个文件的内容，导入到各自的contentList中
-                        List<String> contentList = Files.readAllLines(Paths.get(filePath));
+                        List<String> contentList = Files.readAllLines(Paths.get(filePath),  StandardCharsets.UTF_8);
                         //再导入到最终的allContentList中
                         allContentList.addAll(contentList);
                     }

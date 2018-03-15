@@ -37,6 +37,11 @@ public class FaceAttribute implements Serializable{
      * 是否戴眼镜
      */
     private int eyeglasses;
+    /**
+     * 清晰度评价
+     * 像素 80x80 以上的，是清晰的图，清晰为0，不清晰为1
+     */
+    private int sharpness;
 
     public float[] getFeature() {
         return feature;
@@ -102,6 +107,14 @@ public class FaceAttribute implements Serializable{
         this.eyeglasses = eyeglasses;
     }
 
+    public int getSharpness() {
+        return sharpness;
+    }
+
+    public void setSharpness(int sharpness) {
+        this.sharpness = sharpness;
+    }
+
     @Override
     public String toString() {
         return "FaceAttribute{" +
@@ -113,6 +126,7 @@ public class FaceAttribute implements Serializable{
                 ", tie=" + tie +
                 ", huzi=" + huzi +
                 ", eyeglasses=" + eyeglasses +
+                ", sharpness=" + sharpness +
                 '}';
     }
 }

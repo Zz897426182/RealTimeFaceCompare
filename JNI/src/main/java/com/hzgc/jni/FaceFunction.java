@@ -50,6 +50,14 @@ public class FaceFunction {
                 faceImage = ImageIO.read(new ByteArrayInputStream(imageData));
                 int height = faceImage.getHeight();
                 int width = faceImage.getWidth();
+
+                // 判断图片清晰度，0为清晰，1为不清晰
+                if (height > 80 && width > 80) {
+                    faceAttribute.setSharpness(0);
+                } else {
+                    faceAttribute.setSharpness(1);
+                }
+
                 int[] rgbArray = new int[height * width * 3];
                 for (int h = 0; h < height; h++) {
                     for (int w = 0; w < width; w++) {

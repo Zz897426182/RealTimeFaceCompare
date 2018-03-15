@@ -22,10 +22,12 @@ public class ProcessCallBack implements Callback {
     @Override
     public void onCompletion(RecordMetadata metadata, Exception e) {
         if (metadata != null) {
+            event.setTimeStamp(System.currentTimeMillis());
             writer.countCheckAndWrite(event);
             LOG.info("Send Kafka successfully! message:[topic:" + metadata.topic() + ", key:" + key +
                     "], send to partition(" + metadata.partition() + "), offset(" + metadata.offset() + ") in " + elapsedTime + "ms");
         } else {
+            event.setTimeStamp(System.currentTimeMillis());
             writer.countCheckAndWrite(event);
             writer.errorLogWrite(writer.getErrorLog(), this.event);
             LOG.error("Send Kafka failed！ message:[" + key + "], write to error log！");

@@ -69,6 +69,8 @@ public class DynamicTable implements Serializable {
     public static final String HUZI = "huzi";
     //人脸属性-是否带领带
     public static final String TIE = "tie";
+    //人脸属性-图片是否清晰
+    public static final String SHARPNESS = "sharpness";
     //小文件合并后数据表
     static final String PERSON_TABLE = "person_table";
     //小文件合并前数据表

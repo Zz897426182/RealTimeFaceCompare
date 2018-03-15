@@ -4,7 +4,6 @@ import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * 人脸对象
@@ -34,9 +33,6 @@ public class FaceObject implements Serializable {
      * 人脸属性对象
      */
     private FaceAttribute attribute;
-    /**
-     * 小图
-     */
 
     private String startTime;
 
@@ -111,6 +107,7 @@ public class FaceObject implements Serializable {
     public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
+
 
     @Override
     public String toString() {

@@ -9,6 +9,10 @@ import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -20,7 +24,8 @@ class GetFaceObject {
         if (row != null && row.length() != 0) {
             LogEvent event = JSONHelper.toObject(row, LogEvent.class);
             // 路径中不包含/opt/ftpdata
-            String path =event.getFtpPath();
+            String portPath =event.getFtpPath();
+            String path = portPath.split("://")[1].substring(portPath.split("://")[1].indexOf("/"));
             // 路径中包含/opt/ftpdata/
             String absolutePath = event.getAbsolutePath();
 
