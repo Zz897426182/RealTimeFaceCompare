@@ -32,7 +32,7 @@ public class ParseByOption {
             // 最终需要返回的内容
             sql.append(sameFieldNeedReturn());
             if (pSearchArgsModel.isTheSameMan() && faceAttributeMap.size() == 1  && photos.size() == 1) {
-                sql.append(", sim");
+                sql.append(", sim as sim");
                 sql.append(" from (select ");
                 sql.append(sameFieldNeedReturn());
                 sql.append(", FACECOMP(");
