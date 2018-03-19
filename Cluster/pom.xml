@@ -133,6 +133,12 @@
             <artifactId>kafka_2.11</artifactId>
             <version>0.8.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.38</version>
+        </dependency>
+
     </dependencies>
     <build>
         <resources>
@@ -182,4 +188,3 @@
         </plugins>
     </build>
 </project>
-

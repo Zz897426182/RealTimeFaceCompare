@@ -95,7 +95,7 @@
             <resource>
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
-                <excludes>
+               <excludes>
                     <exclude>*.properties</exclude>
                     <exclude>*.xml</exclude>
                 </excludes>
