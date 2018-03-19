@@ -50,6 +50,7 @@ public class ParseByOption {
                             featureString.append(FaceFunction.floatArray2string(faceAttribute.getFeature()) + ",");
                         }
                     }
+                    count ++;
                 }
                 setValues.add(new String(featureString));
                 sql.append(") as sim from ");
@@ -180,7 +181,7 @@ public class ParseByOption {
      */
     private static StringBuffer sameFieldNeedReturn() {
         StringBuffer sameFieldReturn = new StringBuffer("");
-        sameFieldReturn.append(ObjectInfoTable.ID);
+        sameFieldReturn.append(ObjectInfoTable.ROWKEY);
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.PKEY);
         sameFieldReturn.append(", ");
@@ -419,9 +420,9 @@ public class ParseByOption {
         sql.append("upsert into ");
         sql.append(ObjectInfoTable.TABLE_NAME);
         sql.append("(");
-        sql.append(ObjectInfoTable.ID);
+        sql.append(ObjectInfoTable.ROWKEY);
 
-        setValues.add(person.get(ObjectInfoTable.ID));
+        setValues.add(person.get(ObjectInfoTable.ROWKEY));
         String name = (String) person.get(ObjectInfoTable.NAME);
         if (name != null) {
             sql.append(", ");

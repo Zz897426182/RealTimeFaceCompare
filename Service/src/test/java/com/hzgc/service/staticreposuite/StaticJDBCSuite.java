@@ -69,7 +69,7 @@ public class StaticJDBCSuite {
     @Test
     public void testUpdateObjectInfo() {
         Map<String, Object> person = new HashMap<>();
-        person.put(ObjectInfoTable.ID, "00834612140f491990efa13d573bca4d");
+        person.put(ObjectInfoTable.ROWKEY, "00834612140f491990efa13d573bca4d");
         person.put(ObjectInfoTable.NAME, "wangnimaenha");
         person.put(ObjectInfoTable.PLATFORMID, "0042");
         infoHandler.updateObjectInfo(person);

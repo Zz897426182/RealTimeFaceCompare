@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class ObjectInfoTable implements Serializable {
     public static final String TABLE_NAME = "objectinfo"; // 表名
-    public static final String ID = "id";              // 对象信息的唯一标志
+    public static final String ROWKEY = "id";              // 对象信息的唯一标志
     public static final String PERSON_COLF = "person";  // person列族
     public static final String NAME_PIN = "namepin";    // 姓名的拼音
     public static final String CREATOR_PIN = "creatorpin";  // 创建者的拼音

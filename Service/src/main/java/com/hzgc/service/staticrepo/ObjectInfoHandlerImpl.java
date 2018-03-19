@@ -6,6 +6,7 @@ import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
+import com.hzgc.util.common.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -15,6 +16,8 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+
+import static java.util.stream.Collectors.groupingBy;
 
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
@@ -32,7 +35,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         LOG.info("the rowkey off this add person is: " + person.getId());
 
-        String sql = "upsert into objectinfo(" + ObjectInfoTable.ID+ ", " + ObjectInfoTable.NAME  + ", "
+        String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY+ ", " + ObjectInfoTable.NAME  + ", "
                 + ObjectInfoTable.PLATFORMID + ", " + ObjectInfoTable.TAG + ", " + ObjectInfoTable.PKEY + ", "
                 + ObjectInfoTable.IDCARD + ", " + ObjectInfoTable.SEX + ", " + ObjectInfoTable.PHOTO + ", "
                 + ObjectInfoTable.FEATURE + ", " + ObjectInfoTable.REASON + ", " + ObjectInfoTable.CREATOR + ", "
@@ -59,7 +62,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
-        String sql = "delete from objectinfo where " + ObjectInfoTable.ID  +" = ?";
+        String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
             pstm = conn.prepareStatement(sql);
@@ -89,7 +92,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public int updateObjectInfo(Map<String, Object> personObject) {
         long start = System.currentTimeMillis();
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        String thePassId = (String) personObject.get(ObjectInfoTable.ID);
+        String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
             return 1;
@@ -192,7 +195,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 if (photos != null && photos.size() != 0
                         && faceAttributeMap != null && faceAttributeMap.size() != 0
                         && faceAttributeMap.size() == photos.size()) {
-                    if (pSearchArgsModel.isTheSameMan()) {  // 不是同一个人
+                    if (!pSearchArgsModel.isTheSameMan()) {  // 不是同一个人
                         // 分类的人
                         Map<String, List<PersonObject>> personObjectsMap = new HashMap<>();
 
@@ -207,7 +210,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                 personObjects.clear();
                             }
                             personObject = new PersonObject();
-                            personObject.setId(resultSet.getString(ObjectInfoTable.ID));
+                            personObject.setId(resultSet.getString(ObjectInfoTable.ROWKEY));
                             personObject.setPkey(resultSet.getString(ObjectInfoTable.PKEY));
                             personObject.setPlatformid(resultSet.getString(ObjectInfoTable.PLATFORMID));
                             personObject.setName(resultSet.getString(ObjectInfoTable.NAME));
@@ -308,5 +311,129 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             HBaseUtil.closTable(table);
         }
         return photo;
+    }
+
+
+    @Override
+    public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
+        List<SubQueryOpts> subQueryOpts = searchRecordOpts.getSubQueryOptsList();
+        // sql
+        String sql = "select " + SearchRecordTable.ID + ", " + SearchRecordTable.RESULT + " from "
+                + SearchRecordTable.TABLE_NAME + " where " + SearchRecordTable.ID + " = ?";
+        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
+        PreparedStatement pstm = null;
+        if (subQueryOpts != null && subQueryOpts.size() == 0) {
+            try {
+                pstm = conn.prepareStatement(sql);
+                pstm.setString(1, searchRecordOpts.getTotalSearchId());
+                ResultSet resultSet = pstm.executeQuery();
+                while (resultSet.next()) {
+                    ObjectSearchResult originObjectSearchResult = (ObjectSearchResult) ObjectUtil.byteToObject(resultSet
+                            .getBytes(SearchRecordTable.RESULT));
+                    if (originObjectSearchResult != null) {
+                        finnalObjectSearchResult.setSearchStatus(originObjectSearchResult.getSearchStatus());
+                        finnalObjectSearchResult.setSearchTotalId(originObjectSearchResult.getSearchTotalId());
+
+                        PersonSingleResult personSingleResult = new PersonSingleResult();
+                        if (originObjectSearchResult.getFinalResults() != null) {
+                            personSingleResult.setSearchNums(0);
+                            PersonSingleResult personSingleResultOrigin;
+                            if (originObjectSearchResult.getFinalResults().get(0) != null) {
+                                personSingleResultOrigin = originObjectSearchResult.getFinalResults().get(0);
+                                personSingleResult.setSearchRowkey(personSingleResultOrigin.getSearchRowkey());
+                                personSingleResult.setSearchPhotos(personSingleResultOrigin.getSearchPhotos());
+                                List<PersonObject>  personObjects = personSingleResultOrigin.getPersons();
+                                Map<String, List<PersonObject>> orderByPkeys = personObjects.stream()
+                                        .collect(groupingBy(PersonObject::getPkey));
+                                List<GroupByPkey> groupByPkeys = new ArrayList<>();
+                                GroupByPkey groupByPkey;
+                                for(Map.Entry<String, List<PersonObject>> entry : orderByPkeys.entrySet()) {
+                                    groupByPkey = new GroupByPkey();
+                                    groupByPkey.setPkey(entry.getKey());
+                                    List<PersonObject> personObjectList = entry.getValue();
+                                    groupByPkey.setPersons(personObjectList);
+                                    if (personObjectList != null) {
+                                        groupByPkey.setTotal(personObjectList.size());
+                                    }
+                                    groupByPkeys.add(groupByPkey);
+                                }
+                                personSingleResult.setPersons(null);
+                                personSingleResult.setGroupByPkeys(groupByPkeys);
+                                List<PersonSingleResult> personSingleResults = new ArrayList<>();
+                                personSingleResults.add(personSingleResult);
+                                finnalObjectSearchResult.setFinalResults(personSingleResults);
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return  null;
+            } finally {
+                PhoenixJDBCHelper.closeConnection(conn, pstm);
+            }
+        } else if (subQueryOpts != null){
+            try {
+                pstm = conn.prepareStatement(sql);
+                pstm.setString(1, searchRecordOpts.getSubQueryOptsList().get(0).getQueryId());
+                ResultSet resultSet = pstm.executeQuery();
+                while (resultSet.next()) {
+                    ObjectSearchResult originObjectSearchResult = (ObjectSearchResult) ObjectUtil.byteToObject(resultSet
+                            .getBytes(SearchRecordTable.RESULT));
+                    if (originObjectSearchResult != null) {
+                        List<PersonSingleResult> personSingleResults = originObjectSearchResult.getFinalResults();
+                        String queryId = subQueryOpts.get(0).getQueryId();
+                        finnalObjectSearchResult.setSearchStatus(originObjectSearchResult.getSearchStatus());
+                        finnalObjectSearchResult.setSearchTotalId(originObjectSearchResult.getSearchTotalId());
+                        PersonSingleResult personSingleResultOrigin = null;
+                        for (PersonSingleResult tmp : personSingleResults) {
+                            if (queryId != null && queryId.equals(tmp.getSearchRowkey())) {
+                                personSingleResultOrigin = tmp;
+                                break;
+                            }
+                        }
+
+                        PersonSingleResult personSingleResult = new PersonSingleResult();
+                        personSingleResult.setSearchNums(0);
+                        if (personSingleResultOrigin != null) {
+                            personSingleResult.setSearchRowkey(personSingleResultOrigin.getSearchRowkey());
+                            personSingleResult.setSearchPhotos(personSingleResultOrigin.getSearchPhotos());
+                            List<PersonObject>  personObjects = personSingleResultOrigin.getPersons();
+                            Map<String, List<PersonObject>> orderByPkeys = personObjects.stream()
+                                    .collect(groupingBy(PersonObject::getPkey));
+                            List<GroupByPkey> groupByPkeys = new ArrayList<>();
+                            GroupByPkey groupByPkey;
+                            for(Map.Entry<String, List<PersonObject>> entry : orderByPkeys.entrySet()) {
+                                groupByPkey = new GroupByPkey();
+                                groupByPkey.setPkey(entry.getKey());
+                                List<PersonObject> personObjectList = entry.getValue();
+                                groupByPkey.setPersons(personObjectList);
+                                if (personObjectList != null) {
+                                    groupByPkey.setTotal(personObjectList.size());
+                                }
+                                groupByPkeys.add(groupByPkey);
+                            }
+                            personSingleResult.setPersons(null);
+                            personSingleResult.setGroupByPkeys(groupByPkeys);
+                            List<PersonSingleResult> personSingleResultsFinale = new ArrayList<>();
+                            personSingleResultsFinale.add(personSingleResult);
+                            finnalObjectSearchResult.setFinalResults(personSingleResultsFinale);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return  null;
+            } finally {
+                PhoenixJDBCHelper.closeConnection(conn, pstm);
+            }
+        }
+        return finnalObjectSearchResult;
+    }
+
+    @Override
+    public byte[] getSearchPhoto(String rowkey) {
+        return  null;
     }
 }

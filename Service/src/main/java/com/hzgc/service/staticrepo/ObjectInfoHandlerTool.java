@@ -61,7 +61,7 @@ public class ObjectInfoHandlerTool {
         PersonObject personObject = new PersonObject();
         try {
             while (resultSet.next()) {
-                personObject.setId(resultSet.getString(ObjectInfoTable.ID));
+                personObject.setId(resultSet.getString(ObjectInfoTable.ROWKEY));
                 personObject.setPkey(resultSet.getString(ObjectInfoTable.PKEY));
                 personObject.setPlatformid(resultSet.getString(ObjectInfoTable.PLATFORMID));
                 personObject.setName(resultSet.getString(ObjectInfoTable.NAME));
@@ -164,7 +164,7 @@ public class ObjectInfoHandlerTool {
         try {
             while (resultSet.next()) {
                 PersonObject personObject = new PersonObject();
-                personObject.setId(resultSet.getString(ObjectInfoTable.ID));
+                personObject.setId(resultSet.getString(ObjectInfoTable.ROWKEY));
                 personObject.setPkey(resultSet.getString(ObjectInfoTable.PKEY));
                 personObject.setPlatformid(resultSet.getString(ObjectInfoTable.PLATFORMID));
                 personObject.setName(resultSet.getString(ObjectInfoTable.NAME));
