@@ -32,4 +32,7 @@
 
     <bean id="CaptureNumberService" class="com.hzgc.service.dynamicrepo.CptureNumberImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CaptureNumberService" ref="CaptureNumberService"/>
+
+    <bean id="ClusteringSearchService" class="com.hzgc.service.clustering.ClusteringSearchServiceImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.clustering.ClusteringSearchService" ref="ClusteringSearchService"/>
 </beans>
