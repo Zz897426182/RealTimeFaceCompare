@@ -259,7 +259,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+                PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
             }
         }
 

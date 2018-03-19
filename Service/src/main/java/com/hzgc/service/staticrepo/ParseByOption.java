@@ -299,27 +299,42 @@ public class ParseByOption {
         // 关于人员类型列表的查询
         List<String> pkeys = pSearchArgsModel.getPkeys();
         if (pkeys != null) {
-            for (int i = 0;i < pkeys.size(); i++) {
-                if (i == pkeys.size() - 1) {
-                    whereQuery.append(" or ");
+            if (pkeys.size() == 1) {
+                if (count > 0) {
+                    whereQuery.append(" and ");
                     whereQuery.append(ObjectInfoTable.PKEY);
-                    whereQuery.append(" = ?)");
-                    setArgsList.add(pkeys.get(i));
-                } else if (i == 0){
-                    if (count > 0) {
-                        whereQuery.append(" and (");
-                    } else {
-                        whereQuery.append(" where (");
-                    }
-                    count++;
-                    whereQuery.append(ObjectInfoTable.PKEY);
-                    whereQuery.append(" = ?");
-                    setArgsList.add(pkeys.get(i));
+                    whereQuery.append(" = ? ");
+                    setArgsList.add(pkeys.get(0));
                 } else {
-                    whereQuery.append(" or ");
+                    whereQuery.append(" where ");
                     whereQuery.append(ObjectInfoTable.PKEY);
-                    whereQuery.append(" = ?");
-                    setArgsList.add(pkeys.get(i));
+                    whereQuery.append(" = ? ");
+                    setArgsList.add(pkeys.get(0));
+                }
+                count ++;
+            } else {
+                for (int i = 0;i < pkeys.size(); i++) {
+                    if (i == pkeys.size() - 1) {
+                        whereQuery.append(" or ");
+                        whereQuery.append(ObjectInfoTable.PKEY);
+                        whereQuery.append(" = ?)");
+                        setArgsList.add(pkeys.get(i));
+                    } else if (i == 0){
+                        if (count > 0) {
+                            whereQuery.append(" and (");
+                        } else {
+                            whereQuery.append(" where (");
+                        }
+                        count++;
+                        whereQuery.append(ObjectInfoTable.PKEY);
+                        whereQuery.append(" = ?");
+                        setArgsList.add(pkeys.get(i));
+                    } else {
+                        whereQuery.append(" or ");
+                        whereQuery.append(ObjectInfoTable.PKEY);
+                        whereQuery.append(" = ?");
+                        setArgsList.add(pkeys.get(i));
+                    }
                 }
             }
         }

@@ -2,6 +2,8 @@ package com.hzgc.service.staticreposuite;
 
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
+import com.hzgc.dubbo.staticrepo.StaticSortParam;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
@@ -72,4 +74,48 @@ public class StaticJDBCSuite {
         person.put(ObjectInfoTable.PLATFORMID, "0042");
         infoHandler.updateObjectInfo(person);
     }
+
+    @Test
+    public void testGetObjectInfo() {
+        ObjectInfoHandlerImpl infoHandler = new ObjectInfoHandlerImpl();
+        PSearchArgsModel pSearchArgsModel = new PSearchArgsModel();
+        pSearchArgsModel.setPaltaformId("0042");
+        pSearchArgsModel.setSex(-1);
+        pSearchArgsModel.setImportant(-1);
+        pSearchArgsModel.setStatus(-1);
+        pSearchArgsModel.setCphone("182029292929");
+        pSearchArgsModel.setCreator("hello");
+        pSearchArgsModel.setIdCard("019292929");
+        List<String> pkeys = new ArrayList<>();
+        pkeys.add("hello");
+        pkeys.add("nimaa");
+        pkeys.add("caoniya");
+        pSearchArgsModel.setPkeys(pkeys);
+        pSearchArgsModel.setName("nini");
+        pSearchArgsModel.setMoHuSearch(true);
+        List<StaticSortParam> sortParms = new ArrayList<>();
+        sortParms.add(StaticSortParam.IMPORTANTASC);
+        sortParms.add(StaticSortParam.TIMEDESC);
+        sortParms.add(StaticSortParam.RELATEDDESC);
+
+//        Map<String,FaceAttribute> faceAttributeMap = new HashMap<>();
+//        Map<String,byte[]> images = new HashMap<>();
+//        byte[] phtoto = FaceFunction.inputPicture(ClassLoader.getSystemResource("2018_02_03_00_26_23_18436_1.jpg").getPath());
+//        images.put("1",phtoto);
+//        FaceAttribute faceAttribute = FaceFunction.featureExtract(phtoto);
+//        faceAttributeMap.put("1", faceAttribute);
+//
+//        images.put("2", phtoto);
+//        faceAttributeMap.put("2", faceAttribute);
+//
+//        pSearchArgsModel.setImages(images);
+//        pSearchArgsModel.setFaceAttributeMap(faceAttributeMap);
+//        pSearchArgsModel.setTheSameMan(false);
+
+        pSearchArgsModel.setStaticSortParams(sortParms);
+        System.out.println(infoHandler.getObjectInfo(pSearchArgsModel));
+    }
+
+
+
 }
