@@ -49,10 +49,9 @@ public interface CapturePictureSearchService {
      * 根据条件筛选抓拍图片，并返回图片对象
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
-     * @param ipcId ipcId用来筛选各个设备下所返回的图片
      * @return List<SearchResult>符合条件的图片对象以list形式返回
      */
-    List<SearchResult> getCaptureHistory(SearchOption option,List<String> ipcId);
+    List<SearchResult> getCaptureHistory(SearchOption option);
 
     /**
      * 抓拍属性统计查询 (刘思阳)

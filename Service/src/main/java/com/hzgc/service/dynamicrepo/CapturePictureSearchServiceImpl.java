@@ -304,12 +304,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      *
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
-     * @param ipcId  ipcId用来筛选各个设备下所返回的图片
      * @return List<SearchResult>符合条件的图片对象以list形式返回
      */
     @Override
-    public List<SearchResult> getCaptureHistory(SearchOption option, List<String> ipcId) {
+    public List<SearchResult> getCaptureHistory(SearchOption option) {
         CaptureHistory captureHistory = new CaptureHistory();
+        List<String> ipcId = option.getDeviceIds();
         option.setSearchType(SearchType.PERSON);
         return captureHistory.getRowKey_history(option, ipcId);
     }
