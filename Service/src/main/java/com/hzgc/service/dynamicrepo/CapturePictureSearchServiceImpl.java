@@ -311,7 +311,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CaptureHistory captureHistory = new CaptureHistory();
         List<String> ipcId = option.getDeviceIds();
         option.setSearchType(SearchType.PERSON);
-        return captureHistory.getRowKey_history(option, ipcId);
+        List<SortParam> sortParams = option.getSortParams();
+        return captureHistory.getRowKey_history(option, ipcId,sortParams);
     }
 
     /**
