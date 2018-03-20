@@ -176,6 +176,7 @@ class CaptureHistory {
                             result.setResults(results);
                         }
                     }
+                    singleResult.setTotal(persons.size());
                 }
                 resultList.add(result);
             }
@@ -209,6 +210,7 @@ class CaptureHistory {
                     }
                 }
             }
+            singleResult.setTotal(persons.size());
             singleResult.setPictures(persons);
             results.add(singleResult);
             result.setResults(results);
@@ -242,6 +244,7 @@ class CaptureHistory {
                     persons.add(capturePicture);
                 }
             }
+            singleResult.setTotal(persons.size());
             singleResult.setPictures(persons);
             results.add(singleResult);
             result.setResults(results);
