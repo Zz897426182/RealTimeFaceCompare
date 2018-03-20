@@ -19,7 +19,6 @@ public interface CapturePictureSearchService {
     SearchResult search(SearchOption option);
 
     /**
-     *
      * @param resultOption 历史结果查询参数对象
      * @return SearchResult对象
      */
@@ -47,6 +46,7 @@ public interface CapturePictureSearchService {
     /**
      * 查询抓拍历史记录（陈柯）
      * 根据条件筛选抓拍图片，并返回图片对象
+     *
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
      * @return List<SearchResult>符合条件的图片对象以list形式返回
