@@ -1,6 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 public class SingleResultOption implements Serializable {
@@ -23,4 +24,12 @@ public class SingleResultOption implements Serializable {
         this.ipcList = ipcList;
     }
 
+    @Override
+    public String toString() {
+        return "Single search id is "
+                + id
+                + " ipc list is "
+                + (null == ipcList ? "null" :
+                Arrays.toString(ipcList.toArray()));
+    }
 }

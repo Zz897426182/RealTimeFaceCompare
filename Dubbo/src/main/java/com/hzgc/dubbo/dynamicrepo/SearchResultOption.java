@@ -1,6 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 public class SearchResultOption implements Serializable {
@@ -48,5 +49,19 @@ public class SearchResultOption implements Serializable {
 
     public void setLimit(int limit) {
         this.limit = limit;
+    }
+
+    @Override
+    public String toString() {
+        return "SearchID is "
+                + searchID
+                + ", SortParam is "
+                + Arrays.toString(sortParam.toArray())
+                + ", start is "
+                + start
+                + ", limit is "
+                + limit
+                + ", SingleResultOption is "
+                + (null == singleResultOptions ? "null" : Arrays.toString(singleResultOptions.toArray()));
     }
 }

@@ -55,7 +55,7 @@ public class DynamicPhotoServiceHelper {
      */
     static SearchResult getSearchRes(String searchId) {
         Result result;
-        SearchResult searchResult;
+        SearchResult searchResult = null;
         Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
         Get get = new Get(Bytes.toBytes(searchId));
         try {
@@ -64,8 +64,10 @@ public class DynamicPhotoServiceHelper {
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 searchResult = ((SearchResult) ObjectUtil.byteToObject(searchMessage));
                 searchResult.setSearchId(searchId);
+                return searchResult;
             } else {
                 LOG.info("Get searchResult null from table_searchRes, search id is:" + searchId);
+                return null;
             }
         } catch (IOException e) {
             e.printStackTrace();

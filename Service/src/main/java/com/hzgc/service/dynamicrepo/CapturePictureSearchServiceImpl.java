@@ -92,7 +92,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         }
                 }
             } else {
-                LOG.error("Get query history failure");
+                LOG.error("Get query history failure, SearchResultOption is " + resultOption);
             }
 
         } else {
