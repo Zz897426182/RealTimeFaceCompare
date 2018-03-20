@@ -22,6 +22,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
 
+    private static Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+
     public ObjectInfoHandlerImpl() {
         NativeFunction.init();
     }
@@ -29,7 +31,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         LOG.info("the rowkey off this add person is: " + person.getId());
@@ -49,8 +50,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
-        } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         return 0;
@@ -59,7 +58,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public int deleteObjectInfo(List<String> rowkeys) {
         LOG.info("rowKeys: " + rowkeys);
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
         String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
@@ -77,8 +75,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
-        } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
         return 0;
@@ -92,7 +88,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public int updateObjectInfo(Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
@@ -113,12 +108,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             pstm.executeUpdate();
             conn.commit();
-
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
-        } finally {
-            PhoenixJDBCHelper.closeConnection(null, pstm);
         }
         LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
         return 0;
@@ -127,7 +119,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByRowkey(String id) {
         long start = System.currentTimeMillis();
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         PreparedStatement pstm = null;
         ObjectSearchResult result = new ObjectSearchResult();
         PersonObject person;
@@ -150,8 +141,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             result.setSearchStatus(1);
             e.printStackTrace();
-        } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
         }
         LOG.info("获取一条数据的时间是：" + (System.currentTimeMillis() - start));
         return result;
@@ -161,13 +150,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
         LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         // 总的结果
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
         objectSearchResult.setSearchTotalId(searchTotalId);
         List<PersonSingleResult> finalResults = new ArrayList<>();
-
 
         //封装的sql 以及需要设置的值
         Map<String, List<Object>> finalSqlAndValues = ParseByOption.getSqlFromPSearchArgsModel(conn, pSearchArgsModel);
@@ -263,8 +250,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-            } finally {
-                PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
             }
         }
 
@@ -273,30 +258,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
         LOG.info("总的搜索时间是: " + (System.currentTimeMillis() - start));
         new ObjectInfoHandlerTool().saveSearchRecord(conn, objectSearchResult);
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
         Integer pageSize = pSearchArgsModel.getPageSize();
         Integer startCount = pSearchArgsModel.getStart();
         new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         return objectSearchResult;
     }
 
-    @Override
-    public String getFeature(String tag, byte[] photo) {
-        long start = System.currentTimeMillis();
-        float[] floatFeature = FaceFunction.featureExtract(photo).getFeature();
-        String feature = "";
-        if (floatFeature != null && floatFeature.length == 512) {
-            feature = FaceFunction.floatArray2string(floatFeature);
-        }
-        LOG.info("getFeature, time: " + (System.currentTimeMillis() - start));
-        return feature;
-    }
 
     @Override
     public byte[] getPhotoByKey(String rowkey) {
@@ -326,7 +293,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
      */
     @Override
     public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
-
+        LOG.info("searchRecordOpts: " + searchRecordOpts);
         // 传过来的参数中为空，或者子查询为空，或者子查询大小为0，都返回查询错误。
         if (searchRecordOpts == null) {
             ObjectSearchResult objectSearchResultError = new ObjectSearchResult();

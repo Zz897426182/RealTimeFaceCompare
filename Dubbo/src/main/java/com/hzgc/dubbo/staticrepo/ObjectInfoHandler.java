@@ -47,13 +47,6 @@ public interface ObjectInfoHandler {
      */
     ObjectSearchResult searchByRowkey(String rowkey);
 
-    /**
-     *  根据传进来的图片和人车标志，计算特征值，并且返回  （外） （李第亮）
-     * @param tag  人车标志
-     * @param photo  照片byte 数组
-     * @return  照片的特征值
-     */
-    String getFeature(String tag, byte[] photo);
 
     /**
      * 根据rowkey 返回人员的照片
