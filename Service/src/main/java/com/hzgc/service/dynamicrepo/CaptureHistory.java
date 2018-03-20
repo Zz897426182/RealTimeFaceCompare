@@ -170,13 +170,13 @@ class CaptureHistory {
                             groupByIpc.setIpc(ipc);
                             picturesByIpc.add(groupByIpc);
                             persons.add(capturePicture);
-                            singleResult.setPicturesByIpc(picturesByIpc);
-                            singleResult.setPictures(persons);
-                            results.add(singleResult);
-                            result.setResults(results);
                         }
                     }
                     singleResult.setTotal(persons.size());
+                    singleResult.setPicturesByIpc(picturesByIpc);
+                    singleResult.setPictures(persons);
+                    results.add(singleResult);
+                    result.setResults(results);
                 }
                 resultList.add(result);
             }
