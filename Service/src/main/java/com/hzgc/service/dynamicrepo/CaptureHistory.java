@@ -25,7 +25,7 @@ class CaptureHistory {
 
     List<SearchResult> getRowKey_history(SearchOption option, List<String> ipcId, List<SortParam> sortParams) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder_history(option);
-        return dealWithSearchRequestBuilder_history(searchRequestBuilder, ipcId, sortParams);
+        return dealWithSearchRequestBuilder_history(searchRequestBuilder, ipcId, sortParams,option);
     }
 
     private SearchRequestBuilder getSearchRequestBuilder_history(SearchOption option) {
@@ -128,14 +128,13 @@ class CaptureHistory {
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
                 .setTypes(type)
-                .setFrom(offset)
-                .setSize(count)
                 .addSort("exacttime", SortOrder.fromString(px));
         return requestBuilder.setQuery(totalBQ);
     }
 
 
-    private List<SearchResult> dealWithSearchRequestBuilder_history(SearchRequestBuilder searchRequestBuilder, List<String> ipcId, List<SortParam> sortParams) {
+    private List<SearchResult> dealWithSearchRequestBuilder_history
+            (SearchRequestBuilder searchRequestBuilder, List<String> ipcId, List<SortParam> sortParams,SearchOption option) {
         // 最终要返回的值
         List<SearchResult> resultList = new ArrayList<>();
         // requestBuilder 为空，则返回空
@@ -144,6 +143,13 @@ class CaptureHistory {
                 return resultList;
             }
             for (String ipcid : ipcId) {
+                int offset = option.getOffset();
+                LOG.info("offset is:" + offset);
+                int count = option.getCount();
+                LOG.info("count is:" + count);
+                BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
+                totalBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcid).analyzer("standard"));
+                searchRequestBuilder.setQuery(totalBQ).setFrom(offset).setSize(count);
                 SearchResult result = new SearchResult();
                 List<SingleResult> results = new ArrayList<>();
                 SingleResult singleResult = new SingleResult();
@@ -187,6 +193,11 @@ class CaptureHistory {
             List<SingleResult> results = new ArrayList<>();
             SingleResult singleResult = new SingleResult();
             List<CapturedPicture> persons = new ArrayList<>();
+            int offset = option.getOffset();
+            LOG.info("offset is:" + offset);
+            int count = option.getCount();
+            LOG.info("count is:" + count);
+            searchRequestBuilder.setFrom(offset).setSize(count);
             for (String ipcid : ipcId) {
                 SearchResponse searchResponse = searchRequestBuilder.get();
                 SearchHits searchHits = searchResponse.getHits();
@@ -218,6 +229,11 @@ class CaptureHistory {
             SearchResult result = new SearchResult();
             List<SingleResult> results = new ArrayList<>();
             SingleResult singleResult = new SingleResult();
+            int offset = option.getOffset();
+            LOG.info("offset is:" + offset);
+            int count = option.getCount();
+            LOG.info("count is:" + count);
+            searchRequestBuilder.setFrom(offset).setSize(count);
             if (searchRequestBuilder == null) {
                 return resultList;
             }
