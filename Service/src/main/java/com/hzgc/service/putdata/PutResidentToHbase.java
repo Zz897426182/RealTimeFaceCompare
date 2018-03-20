@@ -1,5 +1,6 @@
 package com.hzgc.service.putdata;
 
+import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.util.HBaseHelper;
 import jxl.Sheet;
@@ -72,7 +73,7 @@ public class PutResidentToHbase {
                             byte[] photo = ImageToByte.image2byte(fs.getAbsolutePath());
                             if (photo != null && photo.length != 0) {
                                 //将信息输出到hbase中
-                                feature = objectInfoHandler.getFeature("person", photo);
+                                feature = FaceFunction.floatArray2string(FaceFunction.featureExtract(photo).getFeature());
                                 put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("photo"), photo);
                                 break;
                             }
