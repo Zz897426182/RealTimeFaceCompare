@@ -32,11 +32,11 @@ class RealTimeFaceCompareBySparkSQL {
             //查询的对象库是人
             if (searchType == SearchType.PERSON) {
                 //根据上传的图片查询
-                return compareByImageBySparkSQL(searchType, option, searchId);
+                return compareByImageBySparkSQL(option, searchId);
                 //查询的对象库是车
             } else if (searchType == SearchType.CAR) {
                 //平台上传的参数中有图片
-                return compareByImageBySparkSQL(searchType, option, searchId);
+                return compareByImageBySparkSQL(option, searchId);
             }
         }
         return new SearchResult();
@@ -45,10 +45,9 @@ class RealTimeFaceCompareBySparkSQL {
     /**
      * 以图搜图，图片不为空的查询方法
      *
-     * @param type 图片类型（人、车）SearchOption 过滤条件
      * @return 返回所有满足查询条件的图片
      */
-    private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option, String searchId) {
+    private SearchResult compareByImageBySparkSQL(SearchOption option, String searchId) {
         Connection conn = null;
         Statement statement = null;
         ResultSet resultSet;
@@ -107,7 +106,7 @@ class RealTimeFaceCompareBySparkSQL {
                 e.printStackTrace();
             }
         }
-        searchResult.setSearchType(SearchType.PERSON);
+        searchResult.setSearchType(DynamicTable.PERSON_TYPE);
         return searchResult;
     }
 
@@ -213,6 +212,7 @@ class RealTimeFaceCompareBySparkSQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        searchResult.setSearchType(DynamicTable.PERSON_TYPE);
         return searchResult;
     }
 

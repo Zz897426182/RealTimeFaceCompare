@@ -9,7 +9,7 @@ public class SearchResult implements Serializable {
 
     private List<SingleResult> results;    //子结果集集合
 
-    private SearchType searchType;    //搜索类型
+    private String searchType;    //搜索类型
 
     public String getSearchId() {
         return searchId;
@@ -27,11 +27,11 @@ public class SearchResult implements Serializable {
         this.results = results;
     }
 
-    public SearchType getSearchType() {
+    public String getSearchType() {
         return searchType;
     }
 
-    public void setSearchType(SearchType searchType) {
+    public void setSearchType(String searchType) {
         this.searchType = searchType;
     }
 
