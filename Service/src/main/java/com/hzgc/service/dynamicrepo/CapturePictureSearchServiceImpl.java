@@ -72,9 +72,10 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         SearchResult searchResult = null;
         if (resultOption.getSearchID() != null && !"".equals(resultOption.getSearchID())) {
             searchResult = DynamicPhotoServiceHelper.getSearchRes(resultOption.getSearchID());
+            LOG.info("Start query history failure, SearchResultOption is " + resultOption);
             if (searchResult != null) {
                 switch (searchResult.getSearchType()) {
-                    case PERSON:
+                    case DynamicTable.PERSON_TYPE:
                         if (resultOption.getSortParam() != null && resultOption.getSortParam().size() > 0) {
                             DynamicPhotoServiceHelper.sortByParamsAndPageSplit(searchResult, resultOption);
                         } else {
@@ -83,7 +84,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             }
                         }
                         break;
-                    case CAR:
+                    case DynamicTable.CAR_TYPE:
                         LOG.error("No vehicle queries are currently supported");
                         break;
                     default:

@@ -1,7 +1,5 @@
 package com.hzgc.service.util;
 
-import org.apache.log4j.Logger;
-
 import java.lang.reflect.Field;
 import java.text.NumberFormat;
 import java.util.Date;
@@ -51,8 +49,8 @@ public class ListUtils {
      * @param typeArr     每个属性对应的升降序数组， true升序，false降序
      */
 
-    public static <CapturedPicture> void sort(List<CapturedPicture> list, final String[] sortNameArr, final boolean[] typeArr) {
-        if (sortNameArr.length != typeArr.length) {
+    public static <CapturedPicture> void sort(List<CapturedPicture> list, final List<String> sortNameArr, final List<Boolean> typeArr) {
+        if (sortNameArr.size() != typeArr.size()) {
             throw new RuntimeException("属性数组元素个数和升降序数组元素个数不相等");
         }
         if (list.size() > 1) {
@@ -68,8 +66,8 @@ public class ListUtils {
                     return 1;
                 }
                 try {
-                    for (int i = 0; i < sortNameArr.length; i++) {
-                        ret = ListUtils.compareObject(sortNameArr[i], typeArr[i], a, b);
+                    for (int i = 0; i < sortNameArr.size(); i++) {
+                        ret = ListUtils.compareObject(sortNameArr.get(i), typeArr.get(i), a, b);
                         if (0 != ret) {
                             break;//如果两个数据根据某个字段相等，则根据下一个字段进行比较
                         }

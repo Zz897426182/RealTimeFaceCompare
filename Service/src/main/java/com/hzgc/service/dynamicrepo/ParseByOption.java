@@ -107,9 +107,6 @@ class ParseByOption {
                 if (printSql) {
                     feature = "";
                 } else {
-                    System.out.println("***");
-                    System.out.println(option.getImages());
-                    System.out.println("***");
                     feature = FaceFunction.floatArray2string(option.getImages().get(i).getFaceAttr().getFeature());
                 }
                 StringBuilder strBuilder = new StringBuilder();

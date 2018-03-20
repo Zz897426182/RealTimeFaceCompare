@@ -20,7 +20,7 @@ import static com.hzgc.util.common.ObjectUtil.objectToByte;
 /**
  * 动态库实现类
  */
-public class DynamicPhotoServiceHelper {
+class DynamicPhotoServiceHelper {
     private static Logger LOG = Logger.getLogger(DynamicPhotoServiceHelper.class);
 
     /**
@@ -55,7 +55,7 @@ public class DynamicPhotoServiceHelper {
      */
     static SearchResult getSearchRes(String searchId) {
         Result result;
-        SearchResult searchResult = null;
+        SearchResult searchResult;
         Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
         Get get = new Get(Bytes.toBytes(searchId));
         try {
@@ -63,7 +63,9 @@ public class DynamicPhotoServiceHelper {
             if (result != null) {
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 searchResult = ((SearchResult) ObjectUtil.byteToObject(searchMessage));
-                searchResult.setSearchId(searchId);
+                if (searchResult != null) {
+                    searchResult.setSearchId(searchId);
+                }
                 return searchResult;
             } else {
                 LOG.info("Get searchResult null from table_searchRes, search id is:" + searchId);
@@ -86,25 +88,25 @@ public class DynamicPhotoServiceHelper {
      */
     static void sortByParamsAndPageSplit(SearchResult result, SearchResultOption option) {
         List<SortParam> paramList = option.getSortParam();
-        boolean[] isAscArr = new boolean[paramList.size()];
-        String[] sortNameArr = new String[paramList.size()];
-        for (int i = 0; i < paramList.size(); i++) {
-            switch (paramList.get(i)) {
+        List<Boolean> isAscArr = new ArrayList<>();
+        List<String> sortNameArr = new ArrayList<>();
+        for (SortParam aParamList : paramList) {
+            switch (aParamList) {
                 case TIMEASC:
-                    isAscArr[i] = true;
-                    sortNameArr[i] = "timeStamp";
+                    isAscArr.add(true);
+                    sortNameArr.add("timeStamp");
                     break;
                 case TIMEDESC:
-                    isAscArr[i] = false;
-                    sortNameArr[i] = "timeStamp";
+                    isAscArr.add(false);
+                    sortNameArr.add("timeStamp");
                     break;
                 case SIMDESC:
-                    isAscArr[i] = false;
-                    sortNameArr[i] = "similarity";
+                    isAscArr.add(false);
+                    sortNameArr.add("similarity");
                     break;
                 case SIMDASC:
-                    isAscArr[i] = true;
-                    sortNameArr[i] = "similarity";
+                    isAscArr.add(true);
+                    sortNameArr.add("similarity");
                     break;
             }
         }
