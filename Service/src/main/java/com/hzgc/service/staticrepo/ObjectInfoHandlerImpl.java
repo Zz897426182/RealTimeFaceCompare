@@ -28,6 +28,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
+        LOG.info("personObject: " + personObject.entrySet().toString());
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
@@ -57,6 +58,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public int deleteObjectInfo(List<String> rowkeys) {
+        LOG.info("rowKeys: " + rowkeys);
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
@@ -88,6 +90,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
      */
     @Override
     public int updateObjectInfo(Map<String, Object> personObject) {
+        LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
@@ -156,6 +159,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
+        LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         // 总的结果
