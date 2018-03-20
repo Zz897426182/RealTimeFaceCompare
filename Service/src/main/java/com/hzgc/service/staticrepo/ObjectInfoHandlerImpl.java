@@ -33,6 +33,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
+        person.setPlatformid(platformId);
         LOG.info("the rowkey off this add person is: " + person.getId());
 
         String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY+ ", " + ObjectInfoTable.NAME  + ", "
@@ -260,7 +261,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         new ObjectInfoHandlerTool().saveSearchRecord(conn, objectSearchResult);
         Integer pageSize = pSearchArgsModel.getPageSize();
         Integer startCount = pSearchArgsModel.getStart();
-        new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
+        if (startCount != null && pageSize != null) {
+            new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
+        }
         return objectSearchResult;
     }
 
