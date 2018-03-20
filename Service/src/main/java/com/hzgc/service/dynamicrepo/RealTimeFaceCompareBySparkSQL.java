@@ -107,6 +107,7 @@ class RealTimeFaceCompareBySparkSQL {
                 e.printStackTrace();
             }
         }
+        searchResult.setSearchType(SearchType.PERSON);
         return searchResult;
     }
 
