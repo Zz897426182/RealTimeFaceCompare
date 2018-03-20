@@ -18,9 +18,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
-
-
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
@@ -336,7 +333,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 总的searchId
         String totalSearchId = searchRecordOpts.getTotalSearchId();
         List<SubQueryOpts> subQueryOpts = searchRecordOpts.getSubQueryOptsList();
-        if (subQueryOpts == null || (subQueryOpts != null && subQueryOpts.size() != 0)) {
+        if (subQueryOpts == null || subQueryOpts.size() != 0) {
             ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
             objectSearchResultError.setSearchStatus(1);
             LOG.info("传入的参数不对，请确认。");
@@ -364,7 +361,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             if (totalSearchId != null && subQueryId == null) {
                 pstm.setString(1, totalSearchId);
 
-            } else if (totalSearchId != null && subQueryId != null) {
+            } else if (totalSearchId != null) {
                 pstm.setString(1, subQueryId);
             }
             ResultSet resultSet = pstm.executeQuery();
@@ -413,8 +410,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         personSingleResult.setGroupByPkeys(groupByPkeys);
                     }
                 }
+                personSingleResult.setPersons(null);
             }
-            personSingleResult.setPersons(null);
             personSingleResults.add(personSingleResult);
         } catch (SQLException e) {
             e.printStackTrace();

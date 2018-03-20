@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjectInfoHandlerTool {
+class ObjectInfoHandlerTool {
     private org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ObjectInfoHandlerTool.class);
     public void saveSearchRecord(Connection conn, ObjectSearchResult objectSearchResult) {
         if (objectSearchResult == null || objectSearchResult.getSearchStatus() == 1
@@ -117,9 +117,9 @@ public class ObjectInfoHandlerTool {
      * @param personSingleResult
      * @param resultSet
      * @param searchByPics
-     * @return
+     * @return personSingelResult
      */
-    public  PersonSingleResult getPersonSingleResult(PersonSingleResult personSingleResult, ResultSet resultSet, boolean searchByPics) {
+     PersonSingleResult getPersonSingleResult(PersonSingleResult personSingleResult, ResultSet resultSet, boolean searchByPics) {
         List<PersonObject> personObjects = new ArrayList<>();
         try {
             while (resultSet.next()) {
@@ -155,7 +155,7 @@ public class ObjectInfoHandlerTool {
     /**
      * 根据请求参数，进行分页处理
      */
-    public void formatTheObjectSearchResult(ObjectSearchResult objectSearchResult, int start, int size) {
+    void formatTheObjectSearchResult(ObjectSearchResult objectSearchResult, int start, int size) {
         if (objectSearchResult == null) {
             return;
         }
