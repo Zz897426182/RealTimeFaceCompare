@@ -192,4 +192,51 @@ public class ObjectInfoHandlerTool {
         return personSingleResult;
     }
 
+    /**
+     * 根据请求参数，进行分页处理
+     */
+    public void formatTheObjectSearchResult(ObjectSearchResult objectSearchResult, PSearchArgsModel pSearchArgsModel) {
+        if (objectSearchResult == null) {
+            return;
+        }
+        Integer start = pSearchArgsModel.getStart();
+        Integer size = pSearchArgsModel.getPageSize();
+        List<PersonSingleResult> personSingleResults = objectSearchResult.getFinalResults();
+
+        List<PersonSingleResult> finalPersonSingleResults = new ArrayList<>();
+        if (personSingleResults != null) {
+            for (PersonSingleResult personSingleResult : personSingleResults) {
+                List<PersonObject> personObjects = personSingleResult.getPersons();
+                if(personObjects != null) {
+                    if ((start + size) > personObjects.size()) {
+                        personSingleResult.setPersons(personObjects.subList(start, personObjects.size()));
+                    } else {
+                        personSingleResult.setPersons(personObjects.subList(start, start + size));
+                    }
+                }
+
+                List<GroupByPkey> groupByPkeys = personSingleResult.getGroupByPkeys();
+                List<GroupByPkey> finaLGroupByPkeys = new ArrayList<>();
+
+                if (groupByPkeys != null) {
+                    for (GroupByPkey groupByPkey : groupByPkeys) {
+                        List<PersonObject> personObjectsV1 = groupByPkey.getPersons();
+                        if (personObjectsV1 != null) {
+                            if ((start + size) > personObjectsV1.size()) {
+                                groupByPkey.setPersons(personObjectsV1.subList(start, personObjectsV1.size()));
+                            } else {
+                                groupByPkey.setPersons(personObjectsV1.subList(start, start + size));
+                            }
+                            finaLGroupByPkeys.add(groupByPkey);
+                        }
+                    }
+                    personSingleResult.setGroupByPkeys(finaLGroupByPkeys);
+                }
+                finalPersonSingleResults.add(personSingleResult);
+            }
+        }
+        objectSearchResult.setFinalResults(finalPersonSingleResults);
+
+    }
+
 }

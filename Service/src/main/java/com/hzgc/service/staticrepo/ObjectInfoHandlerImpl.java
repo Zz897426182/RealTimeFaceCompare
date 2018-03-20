@@ -278,6 +278,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 e.printStackTrace();
             }
         }
+        new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, pSearchArgsModel);
         return objectSearchResult;
     }
 
@@ -314,15 +315,40 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     }
 
 
+    /**
+     * 根据传进来的参数，进行及实际路查询
+     * @param  searchRecordOpts 历史查询参数
+     * @return ObjectSearchResult 返回结果，封装好的历史数据。
+     */
     @Override
     public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
+        if (searchRecordOpts == null) {
+            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
+            objectSearchResultError.setSearchStatus(1);
+            LOG.info("传入的参数不对，请确认。");
+            return objectSearchResultError;
+        }
+
+        String totalSearchId = searchRecordOpts.getTotalSearchId();
         List<SubQueryOpts> subQueryOpts = searchRecordOpts.getSubQueryOptsList();
-        // sql
+
+        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        PreparedStatement pstm = null;
+        // sql 查询语句
         String sql = "select " + SearchRecordTable.ID + ", " + SearchRecordTable.RESULT + " from "
                 + SearchRecordTable.TABLE_NAME + " where " + SearchRecordTable.ID + " = ?";
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+
         ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
-        PreparedStatement pstm = null;
+
+
+        if ((totalSearchId != null && subQueryOpts == null) ||
+                (totalSearchId != null && subQueryOpts != null && subQueryOpts.size() == 0)) {
+
+        }  else if (totalSearchId != null && subQueryOpts !=null && subQueryOpts.size() == 1) {
+
+        }
+
+
         if (subQueryOpts != null && subQueryOpts.size() == 0) {
             try {
                 pstm = conn.prepareStatement(sql);
