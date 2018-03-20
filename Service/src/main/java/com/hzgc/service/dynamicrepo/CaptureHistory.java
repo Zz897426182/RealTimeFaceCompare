@@ -23,9 +23,9 @@ class CaptureHistory {
         ElasticSearchHelper.getEsClient();
     }
 
-    List<SearchResult> getRowKey_history(SearchOption option,List<String> ipcId,List<SortParam> sortParams) {
+    List<SearchResult> getRowKey_history(SearchOption option, List<String> ipcId, List<SortParam> sortParams) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder_history(option);
-        return dealWithSearchRequestBuilder_history(searchRequestBuilder,ipcId,sortParams);
+        return dealWithSearchRequestBuilder_history(searchRequestBuilder, ipcId, sortParams);
     }
 
     private SearchRequestBuilder getSearchRequestBuilder_history(SearchOption option) {
@@ -54,10 +54,10 @@ class CaptureHistory {
         //排序条件
         List<SortParam> sortParams = option.getSortParams();
         String px = "desc";
-        for (SortParam s : sortParams){
+        for (SortParam s : sortParams) {
             if (s.name().equals("TIMEDESC")) {
                 px = "desc";
-            } else if (s.name().equals("TIMEASC")){
+            } else if (s.name().equals("TIMEASC")) {
                 px = "asc";
             }
         }
@@ -135,16 +135,15 @@ class CaptureHistory {
     }
 
 
-
-    private List<SearchResult> dealWithSearchRequestBuilder_history(SearchRequestBuilder searchRequestBuilder,List<String> ipcId,List<SortParam> sortParams) {
+    private List<SearchResult> dealWithSearchRequestBuilder_history(SearchRequestBuilder searchRequestBuilder, List<String> ipcId, List<SortParam> sortParams) {
         // 最终要返回的值
         List<SearchResult> resultList = new ArrayList<>();
         // requestBuilder 为空，则返回空
-        if (ipcId != null  && ipcId.size() > 0&& sortParams.get(0).name().equals("IPC")){
+        if (ipcId != null && ipcId.size() > 0 && sortParams.get(0).name().equals("IPC")) {
             if (searchRequestBuilder == null) {
                 return resultList;
             }
-            for (String ipcid : ipcId){
+            for (String ipcid : ipcId) {
                 SearchResult result = new SearchResult();
                 List<SingleResult> results = new ArrayList<>();
                 SingleResult singleResult = new SingleResult();
@@ -166,7 +165,7 @@ class CaptureHistory {
                         capturePicture.setBurl(FtpUtils.getFtpUrl(burl));
                         capturePicture.setIpcId(ipc);
                         capturePicture.setTimeStamp(timestamp);
-                        if (ipcid.equals(ipc)){
+                        if (ipcid.equals(ipc)) {
                             groupByIpc.setIpc(ipc);
                             picturesByIpc.add(groupByIpc);
                             persons.add(capturePicture);
@@ -180,7 +179,7 @@ class CaptureHistory {
                 }
                 resultList.add(result);
             }
-        }else if (ipcId != null && ipcId.size() > 0 && !sortParams.get(0).name().equals("IPC")){
+        } else if (ipcId != null && ipcId.size() > 0 && !sortParams.get(0).name().equals("IPC")) {
             if (searchRequestBuilder == null) {
                 return resultList;
             }
@@ -188,7 +187,7 @@ class CaptureHistory {
             List<SingleResult> results = new ArrayList<>();
             SingleResult singleResult = new SingleResult();
             List<CapturedPicture> persons = new ArrayList<>();
-            for (String ipcid : ipcId){
+            for (String ipcid : ipcId) {
                 SearchResponse searchResponse = searchRequestBuilder.get();
                 SearchHits searchHits = searchResponse.getHits();
                 SearchHit[] hits = searchHits.getHits();
@@ -204,7 +203,7 @@ class CaptureHistory {
                         capturePicture.setBurl(FtpUtils.getFtpUrl(burl));
                         capturePicture.setIpcId(ipc);
                         capturePicture.setTimeStamp(timestamp);
-                        if (ipcid.equals(ipc)){
+                        if (ipcid.equals(ipc)) {
                             persons.add(capturePicture);
                         }
                     }
@@ -215,7 +214,7 @@ class CaptureHistory {
             results.add(singleResult);
             result.setResults(results);
             resultList.add(result);
-        }else if ((ipcId == null || ipcId.size() == 0) && !sortParams.get(0).name().equals("IPC")){
+        } else if ((ipcId == null || ipcId.size() == 0) && !sortParams.get(0).name().equals("IPC")) {
             SearchResult result = new SearchResult();
             List<SingleResult> results = new ArrayList<>();
             SingleResult singleResult = new SingleResult();
