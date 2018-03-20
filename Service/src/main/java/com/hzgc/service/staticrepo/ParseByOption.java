@@ -32,7 +32,7 @@ public class ParseByOption {
             // 最终需要返回的内容
             sql.append(sameFieldNeedReturn());
             if (pSearchArgsModel.isTheSameMan() && faceAttributeMap.size() == 1  && photos.size() == 1) {
-                sql.append(", sim");
+                sql.append(", sim as sim");
                 sql.append(" from (select ");
                 sql.append(sameFieldNeedReturn());
                 sql.append(", FACECOMP(");
@@ -50,6 +50,7 @@ public class ParseByOption {
                             featureString.append(FaceFunction.floatArray2string(faceAttribute.getFeature()) + ",");
                         }
                     }
+                    count ++;
                 }
                 setValues.add(new String(featureString));
                 sql.append(") as sim from ");
@@ -180,7 +181,7 @@ public class ParseByOption {
      */
     private static StringBuffer sameFieldNeedReturn() {
         StringBuffer sameFieldReturn = new StringBuffer("");
-        sameFieldReturn.append(ObjectInfoTable.ID);
+        sameFieldReturn.append(ObjectInfoTable.ROWKEY);
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.PKEY);
         sameFieldReturn.append(", ");
@@ -299,27 +300,42 @@ public class ParseByOption {
         // 关于人员类型列表的查询
         List<String> pkeys = pSearchArgsModel.getPkeys();
         if (pkeys != null) {
-            for (int i = 0;i < pkeys.size(); i++) {
-                if (i == pkeys.size() - 1) {
-                    whereQuery.append(" or ");
+            if (pkeys.size() == 1) {
+                if (count > 0) {
+                    whereQuery.append(" and ");
                     whereQuery.append(ObjectInfoTable.PKEY);
-                    whereQuery.append(" = ?)");
-                    setArgsList.add(pkeys.get(i));
-                } else if (i == 0){
-                    if (count > 0) {
-                        whereQuery.append(" and (");
-                    } else {
-                        whereQuery.append(" where (");
-                    }
-                    count++;
-                    whereQuery.append(ObjectInfoTable.PKEY);
-                    whereQuery.append(" = ?");
-                    setArgsList.add(pkeys.get(i));
+                    whereQuery.append(" = ? ");
+                    setArgsList.add(pkeys.get(0));
                 } else {
-                    whereQuery.append(" or ");
+                    whereQuery.append(" where ");
                     whereQuery.append(ObjectInfoTable.PKEY);
-                    whereQuery.append(" = ?");
-                    setArgsList.add(pkeys.get(i));
+                    whereQuery.append(" = ? ");
+                    setArgsList.add(pkeys.get(0));
+                }
+                count ++;
+            } else {
+                for (int i = 0;i < pkeys.size(); i++) {
+                    if (i == pkeys.size() - 1) {
+                        whereQuery.append(" or ");
+                        whereQuery.append(ObjectInfoTable.PKEY);
+                        whereQuery.append(" = ?)");
+                        setArgsList.add(pkeys.get(i));
+                    } else if (i == 0){
+                        if (count > 0) {
+                            whereQuery.append(" and (");
+                        } else {
+                            whereQuery.append(" where (");
+                        }
+                        count++;
+                        whereQuery.append(ObjectInfoTable.PKEY);
+                        whereQuery.append(" = ?");
+                        setArgsList.add(pkeys.get(i));
+                    } else {
+                        whereQuery.append(" or ");
+                        whereQuery.append(ObjectInfoTable.PKEY);
+                        whereQuery.append(" = ?");
+                        setArgsList.add(pkeys.get(i));
+                    }
                 }
             }
         }
@@ -404,9 +420,9 @@ public class ParseByOption {
         sql.append("upsert into ");
         sql.append(ObjectInfoTable.TABLE_NAME);
         sql.append("(");
-        sql.append(ObjectInfoTable.ID);
+        sql.append(ObjectInfoTable.ROWKEY);
 
-        setValues.add(person.get(ObjectInfoTable.ID));
+        setValues.add(person.get(ObjectInfoTable.ROWKEY));
         String name = (String) person.get(ObjectInfoTable.NAME);
         if (name != null) {
             sql.append(", ");

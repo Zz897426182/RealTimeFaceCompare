@@ -6,6 +6,7 @@ import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
+import com.hzgc.util.common.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
@@ -32,7 +33,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         LOG.info("the rowkey off this add person is: " + person.getId());
 
-        String sql = "upsert into objectinfo(" + ObjectInfoTable.ID+ ", " + ObjectInfoTable.NAME  + ", "
+        String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY+ ", " + ObjectInfoTable.NAME  + ", "
                 + ObjectInfoTable.PLATFORMID + ", " + ObjectInfoTable.TAG + ", " + ObjectInfoTable.PKEY + ", "
                 + ObjectInfoTable.IDCARD + ", " + ObjectInfoTable.SEX + ", " + ObjectInfoTable.PHOTO + ", "
                 + ObjectInfoTable.FEATURE + ", " + ObjectInfoTable.REASON + ", " + ObjectInfoTable.CREATOR + ", "
@@ -59,7 +60,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
-        String sql = "delete from objectinfo where " + ObjectInfoTable.ID  +" = ?";
+        String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
             pstm = conn.prepareStatement(sql);
@@ -89,7 +90,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public int updateObjectInfo(Map<String, Object> personObject) {
         long start = System.currentTimeMillis();
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        String thePassId = (String) personObject.get(ObjectInfoTable.ID);
+        String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
             return 1;
@@ -192,7 +193,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 if (photos != null && photos.size() != 0
                         && faceAttributeMap != null && faceAttributeMap.size() != 0
                         && faceAttributeMap.size() == photos.size()) {
-                    if (pSearchArgsModel.isTheSameMan()) {  // 不是同一个人
+                    if (!pSearchArgsModel.isTheSameMan()) {  // 不是同一个人
                         // 分类的人
                         Map<String, List<PersonObject>> personObjectsMap = new HashMap<>();
 
@@ -207,7 +208,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                 personObjects.clear();
                             }
                             personObject = new PersonObject();
-                            personObject.setId(resultSet.getString(ObjectInfoTable.ID));
+                            personObject.setId(resultSet.getString(ObjectInfoTable.ROWKEY));
                             personObject.setPkey(resultSet.getString(ObjectInfoTable.PKEY));
                             personObject.setPlatformid(resultSet.getString(ObjectInfoTable.PLATFORMID));
                             personObject.setName(resultSet.getString(ObjectInfoTable.NAME));
@@ -259,7 +260,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+                PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
             }
         }
 
@@ -275,6 +276,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 e.printStackTrace();
             }
         }
+        Integer pageSize = pSearchArgsModel.getPageSize();
+        Integer startCount = pSearchArgsModel.getStart();
+        new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         return objectSearchResult;
     }
 
@@ -308,5 +312,120 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             HBaseUtil.closTable(table);
         }
         return photo;
+    }
+
+
+    /**
+     * 根据传进来的参数，进行及实际路查询
+     * @param  searchRecordOpts 历史查询参数
+     * @return ObjectSearchResult 返回结果，封装好的历史数据。
+     */
+    @Override
+    public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
+
+        // 传过来的参数中为空，或者子查询为空，或者子查询大小为0，都返回查询错误。
+        if (searchRecordOpts == null) {
+            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
+            objectSearchResultError.setSearchStatus(1);
+            LOG.info("传入的参数不对，请确认。");
+            return objectSearchResultError;
+        }
+        // 总的searchId
+        String totalSearchId = searchRecordOpts.getTotalSearchId();
+        List<SubQueryOpts> subQueryOpts = searchRecordOpts.getSubQueryOptsList();
+        if (subQueryOpts == null || subQueryOpts.size() != 0) {
+            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
+            objectSearchResultError.setSearchStatus(1);
+            LOG.info("传入的参数不对，请确认。");
+            return objectSearchResultError;
+        }
+
+        // 子查询Id
+        String subQueryId = subQueryOpts.get(0).getQueryId();
+        // 需要分组的pkeys
+        List<String> pkeys = subQueryOpts.get(0).getPkeys();
+        // 排序参数
+        List<StaticSortParam> staticSortParams = searchRecordOpts.getStaticSortParams();
+
+        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        PreparedStatement pstm;
+        // sql 查询语句
+        String sql = "select " + SearchRecordTable.ID + ", " + SearchRecordTable.RESULT + " from "
+                + SearchRecordTable.TABLE_NAME + " where " + SearchRecordTable.ID + " = ?";
+
+        ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
+        List<PersonSingleResult> personSingleResults = new ArrayList<>();
+
+        try {
+            pstm = conn.prepareStatement(sql);
+            if (totalSearchId != null && subQueryId == null) {
+                pstm.setString(1, totalSearchId);
+
+            } else if (totalSearchId != null) {
+                pstm.setString(1, subQueryId);
+            }
+            ResultSet resultSet = pstm.executeQuery();
+            resultSet.next();
+            PersonSingleResult personSingleResult = (PersonSingleResult) ObjectUtil
+                    .byteToObject(resultSet.getBytes(SearchRecordTable.RESULT));
+            if (personSingleResult != null) {
+                List<PersonObject> personObjects = personSingleResult.getPersons();
+                List<GroupByPkey> groupByPkeys = new ArrayList<>();
+
+                GroupByPkey groupByPkey;
+                if (personObjects != null) {
+                    Map<String, List<PersonObject>> groupingByPkeys = personObjects.stream()
+                            .collect(Collectors.groupingBy(PersonObject::getPkey));
+                    for (Map.Entry<String, List<PersonObject>> entry : groupingByPkeys.entrySet()) {
+                        groupByPkey = new GroupByPkey();
+                        String pkey = entry.getKey();
+                        if (pkeys.contains(pkey)) {
+                            groupByPkey.setPkey(entry.getKey());
+                            List<PersonObject> tmp = entry.getValue();
+                            if (tmp != null) {
+                                groupByPkey.setPersons(tmp);
+                                if (staticSortParams != null) {
+                                    if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
+                                        tmp.sort((p1, p2) -> (int)((p1.getSim() - p2.getSim()) * 100));
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
+                                        tmp.sort((p1, p2) -> (int)((p2.getSim() - p1.getSim()) * 100));
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.IMPORTANTASC)) {
+                                        tmp.sort((p1, p2) -> p1.getImportant() - p2.getImportant());
+                                    }
+                                    if(staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
+                                        tmp.sort((p1, p2) -> p2.getImportant() - p1.getImportant());
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.TIMEASC)) {
+                                        tmp.sort((p1, p2) -> p1.getCreatetime().compareTo(p2.getCreatetime()));
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.TIMEDESC)) {
+                                        tmp.sort((p1, p2) -> p2.getCreatetime().compareTo(p1.getCreatetime()));
+                                    }
+                                }
+                            }
+                            groupByPkeys.add(groupByPkey);
+                        }
+                        personSingleResult.setGroupByPkeys(groupByPkeys);
+                    }
+                }
+                personSingleResult.setPersons(null);
+            }
+            personSingleResults.add(personSingleResult);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finnalObjectSearchResult.setSearchStatus(0);
+        finnalObjectSearchResult.setFinalResults(personSingleResults);
+        int pageSize = searchRecordOpts.getSize();
+        int start = searchRecordOpts.getStart();
+        new ObjectInfoHandlerTool().formatTheObjectSearchResult(finnalObjectSearchResult, start, pageSize);
+        return finnalObjectSearchResult;
+    }
+
+    @Override
+    public byte[] getSearchPhoto(String rowkey) {
+        return  null;
     }
 }

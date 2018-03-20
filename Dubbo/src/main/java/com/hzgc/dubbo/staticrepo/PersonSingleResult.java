@@ -1,11 +1,12 @@
 package com.hzgc.dubbo.staticrepo;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * 多个人的的情况下，每个图片对应的
  */
-public class PersonSingleResult {
+public class PersonSingleResult implements Serializable {
     private String searchRowkey;        // 子搜索Id
     private int searchNums;             // 搜索的总数
     private List<byte[]> searchPhotos;      // 图片

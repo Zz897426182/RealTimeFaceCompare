@@ -46,7 +46,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
     @Override
     public ClusteringInfo clusteringSearch(String region, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
-        Get get = new Get(Bytes.toBytes(time + region));
+        Get get = new Get(Bytes.toBytes(time + "-" + region));
         List<ClusteringAttribute> clusteringList = new ArrayList<>();
         try {
             Result result = clusteringInfoTable.get(get);

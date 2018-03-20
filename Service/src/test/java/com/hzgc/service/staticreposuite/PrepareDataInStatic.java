@@ -26,15 +26,15 @@ public class PrepareDataInStatic {
             if (i % 10 == 0) {
                 person.put(ObjectInfoTable.PLATFORMID, "0042");
                 person.put(ObjectInfoTable.PKEY, "0042002");
-                person.put(ObjectInfoTable.ID, "0042002" + idCard);
+                person.put(ObjectInfoTable.ROWKEY, "0042002" + idCard);
             } else if (i %3 == 0) {
                 person.put(ObjectInfoTable.PLATFORMID, "0041");
                 person.put(ObjectInfoTable.PKEY, "0041001");
-                person.put(ObjectInfoTable.ID, "0041001" + idCard);
+                person.put(ObjectInfoTable.ROWKEY, "0041001" + idCard);
             } else {
                 person.put(ObjectInfoTable.PLATFORMID, "0040");
                 person.put(ObjectInfoTable.PKEY, "0040002");
-                person.put(ObjectInfoTable.ID, "0040002" + idCard);
+                person.put(ObjectInfoTable.ROWKEY, "0040002" + idCard);
             }
             person.put(ObjectInfoTable.NAME, "nameValue" + i);
             person.put(ObjectInfoTable.SEX, 1);
