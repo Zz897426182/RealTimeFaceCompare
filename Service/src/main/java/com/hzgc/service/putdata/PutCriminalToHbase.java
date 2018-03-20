@@ -1,5 +1,6 @@
 package com.hzgc.service.putdata;
 
+import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.util.HBaseHelper;
 import org.apache.hadoop.hbase.client.Put;
@@ -50,7 +51,7 @@ public class PutCriminalToHbase {
                     try {
                         byte[] photo = ImageToByte.image2byte(fs.getAbsolutePath());
                         if (photo.length != 0) {
-                            feature = objectInfoHandler.getFeature("person", photo);
+                            feature = FaceFunction.floatArray2string(FaceFunction.featureExtract(photo).getFeature());
                             put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("photo"), photo);
                         }
                         put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("platformid"), Bytes.toBytes("0001"));

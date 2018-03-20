@@ -2,6 +2,7 @@ package com.hzgc.service.staticrepo;
 
 
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
 import org.apache.hadoop.hbase.client.*;
@@ -74,7 +75,7 @@ public class ChangeFeatureByPkey {
                     }
                     byte[] photo = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PHOTO));
                     //得到每个人员类型对应的特征值
-                    feature = objectInfoHandler.getFeature(ObjectInfoTable.PERSON_COLF, photo);
+                    feature = FaceFunction.floatArray2string(FaceFunction.featureExtract(photo).getFeature());
                     //当有特征值时，才将结果返回
                     if (!feature.equals("")) {
                         //将人员类型、rowkey和特征值进行拼接
