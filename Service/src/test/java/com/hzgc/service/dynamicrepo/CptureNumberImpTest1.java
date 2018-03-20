@@ -12,9 +12,9 @@ public class CptureNumberImpTest1 {
     public static void main(String[] args) {
         SearchOption searchOption = new SearchOption();
         List<String> deviceIds = new ArrayList<>();
-        deviceIds.add("3B0383FPAG00883");
-        //deviceIds.add("3K01E84PAU00150");
-        //deviceIds.add("2L04129PAU01933");
+        //deviceIds.add("3B0383FPAG00883");
+        deviceIds.add("3K01E84PAU00150");
+        deviceIds.add("2L04129PAU01933");
         deviceIds.add("DS-2CD2T20FD-I320160122AACH571485690");
         searchOption.setDeviceIds(deviceIds);
         List<SortParam> sortParams = new ArrayList<>();
