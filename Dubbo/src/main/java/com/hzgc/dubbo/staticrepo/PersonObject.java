@@ -198,7 +198,7 @@ public class PersonObject implements Serializable{
         personObject.setPlatformid((String) person.get(ObjectInfoTable.PLATFORMID));
         personObject.setName((String) person.get(ObjectInfoTable.NAME));
         if (person.get(ObjectInfoTable.SEX) != null) {
-            personObject.setSex((Integer) person.get(ObjectInfoTable.SEX));
+            personObject.setSex(Integer.parseInt((String) person.get(ObjectInfoTable.SEX)));
         }
         personObject.setIdcard((String) person.get(ObjectInfoTable.IDCARD));
         personObject.setPhoto((byte[]) person.get(ObjectInfoTable.PHOTO));
@@ -208,10 +208,10 @@ public class PersonObject implements Serializable{
         personObject.setReason((String) person.get(ObjectInfoTable.REASON));
         personObject.setTag((String) person.get(ObjectInfoTable.TAG));
         if (person.get(ObjectInfoTable.IMPORTANT) != null) {
-            personObject.setImportant((Integer) person.get(ObjectInfoTable.IMPORTANT));
+            personObject.setImportant(Integer.parseInt((String) person.get(ObjectInfoTable.IMPORTANT)));
         }
         if (person.get(ObjectInfoTable.STATUS) != null) {
-            personObject.setStatus((Integer) person.get(ObjectInfoTable.STATUS));
+            personObject.setStatus(Integer.parseInt((String) person.get(ObjectInfoTable.STATUS)));
         }
         long dateNow = System.currentTimeMillis();
         personObject.setUpdatetime(new Timestamp(dateNow));

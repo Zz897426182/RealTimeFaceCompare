@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 
@@ -278,7 +279,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 e.printStackTrace();
             }
         }
-        new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, pSearchArgsModel);
+        Integer pageSize = pSearchArgsModel.getPageSize();
+        Integer startCount = pSearchArgsModel.getStart();
+        new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         return objectSearchResult;
     }
 
@@ -322,139 +325,105 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
      */
     @Override
     public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
+
+        // 传过来的参数中为空，或者子查询为空，或者子查询大小为0，都返回查询错误。
         if (searchRecordOpts == null) {
             ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
             objectSearchResultError.setSearchStatus(1);
             LOG.info("传入的参数不对，请确认。");
             return objectSearchResultError;
         }
-
+        // 总的searchId
         String totalSearchId = searchRecordOpts.getTotalSearchId();
         List<SubQueryOpts> subQueryOpts = searchRecordOpts.getSubQueryOptsList();
+        if (subQueryOpts == null || (subQueryOpts != null && subQueryOpts.size() != 0)) {
+            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
+            objectSearchResultError.setSearchStatus(1);
+            LOG.info("传入的参数不对，请确认。");
+            return objectSearchResultError;
+        }
+
+        // 子查询Id
+        String subQueryId = subQueryOpts.get(0).getQueryId();
+        // 需要分组的pkeys
+        List<String> pkeys = subQueryOpts.get(0).getPkeys();
+        // 排序参数
+        List<StaticSortParam> staticSortParams = searchRecordOpts.getStaticSortParams();
 
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        PreparedStatement pstm = null;
+        PreparedStatement pstm;
         // sql 查询语句
         String sql = "select " + SearchRecordTable.ID + ", " + SearchRecordTable.RESULT + " from "
                 + SearchRecordTable.TABLE_NAME + " where " + SearchRecordTable.ID + " = ?";
 
         ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
+        List<PersonSingleResult> personSingleResults = new ArrayList<>();
 
+        try {
+            pstm = conn.prepareStatement(sql);
+            if (totalSearchId != null && subQueryId == null) {
+                pstm.setString(1, totalSearchId);
 
-        if ((totalSearchId != null && subQueryOpts == null) ||
-                (totalSearchId != null && subQueryOpts != null && subQueryOpts.size() == 0)) {
+            } else if (totalSearchId != null && subQueryId != null) {
+                pstm.setString(1, subQueryId);
+            }
+            ResultSet resultSet = pstm.executeQuery();
+            resultSet.next();
+            PersonSingleResult personSingleResult = (PersonSingleResult) ObjectUtil
+                    .byteToObject(resultSet.getBytes(SearchRecordTable.RESULT));
+            if (personSingleResult != null) {
+                List<PersonObject> personObjects = personSingleResult.getPersons();
+                List<GroupByPkey> groupByPkeys = new ArrayList<>();
 
-        }  else if (totalSearchId != null && subQueryOpts !=null && subQueryOpts.size() == 1) {
-
-        }
-
-
-        if (subQueryOpts != null && subQueryOpts.size() == 0) {
-            try {
-                pstm = conn.prepareStatement(sql);
-                pstm.setString(1, searchRecordOpts.getTotalSearchId());
-                ResultSet resultSet = pstm.executeQuery();
-                while (resultSet.next()) {
-                    ObjectSearchResult originObjectSearchResult = (ObjectSearchResult) ObjectUtil.byteToObject(resultSet
-                            .getBytes(SearchRecordTable.RESULT));
-                    if (originObjectSearchResult != null) {
-                        finnalObjectSearchResult.setSearchStatus(originObjectSearchResult.getSearchStatus());
-                        finnalObjectSearchResult.setSearchTotalId(originObjectSearchResult.getSearchTotalId());
-
-                        PersonSingleResult personSingleResult = new PersonSingleResult();
-                        if (originObjectSearchResult.getFinalResults() != null) {
-                            personSingleResult.setSearchNums(0);
-                            PersonSingleResult personSingleResultOrigin;
-                            if (originObjectSearchResult.getFinalResults().get(0) != null) {
-                                personSingleResultOrigin = originObjectSearchResult.getFinalResults().get(0);
-                                personSingleResult.setSearchRowkey(personSingleResultOrigin.getSearchRowkey());
-                                personSingleResult.setSearchPhotos(personSingleResultOrigin.getSearchPhotos());
-                                List<PersonObject>  personObjects = personSingleResultOrigin.getPersons();
-                                Map<String, List<PersonObject>> orderByPkeys = personObjects.stream()
-                                        .collect(groupingBy(PersonObject::getPkey));
-                                List<GroupByPkey> groupByPkeys = new ArrayList<>();
-                                GroupByPkey groupByPkey;
-                                for(Map.Entry<String, List<PersonObject>> entry : orderByPkeys.entrySet()) {
-                                    groupByPkey = new GroupByPkey();
-                                    groupByPkey.setPkey(entry.getKey());
-                                    List<PersonObject> personObjectList = entry.getValue();
-                                    groupByPkey.setPersons(personObjectList);
-                                    if (personObjectList != null) {
-                                        groupByPkey.setTotal(personObjectList.size());
+                GroupByPkey groupByPkey;
+                if (personObjects != null) {
+                    Map<String, List<PersonObject>> groupingByPkeys = personObjects.stream()
+                            .collect(Collectors.groupingBy(PersonObject::getPkey));
+                    for (Map.Entry<String, List<PersonObject>> entry : groupingByPkeys.entrySet()) {
+                        groupByPkey = new GroupByPkey();
+                        String pkey = entry.getKey();
+                        if (pkeys.contains(pkey)) {
+                            groupByPkey.setPkey(entry.getKey());
+                            List<PersonObject> tmp = entry.getValue();
+                            if (tmp != null) {
+                                groupByPkey.setPersons(tmp);
+                                if (staticSortParams != null) {
+                                    if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
+                                        tmp.sort((p1, p2) -> (int)((p1.getSim() - p2.getSim()) * 100));
                                     }
-                                    groupByPkeys.add(groupByPkey);
+                                    if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
+                                        tmp.sort((p1, p2) -> (int)((p2.getSim() - p1.getSim()) * 100));
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.IMPORTANTASC)) {
+                                        tmp.sort((p1, p2) -> p1.getImportant() - p2.getImportant());
+                                    }
+                                    if(staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
+                                        tmp.sort((p1, p2) -> p2.getImportant() - p1.getImportant());
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.TIMEASC)) {
+                                        tmp.sort((p1, p2) -> p1.getCreatetime().compareTo(p2.getCreatetime()));
+                                    }
+                                    if (staticSortParams.contains(StaticSortParam.TIMEDESC)) {
+                                        tmp.sort((p1, p2) -> p2.getCreatetime().compareTo(p1.getCreatetime()));
+                                    }
                                 }
-                                personSingleResult.setPersons(null);
-                                personSingleResult.setGroupByPkeys(groupByPkeys);
-                                List<PersonSingleResult> personSingleResults = new ArrayList<>();
-                                personSingleResults.add(personSingleResult);
-                                finnalObjectSearchResult.setFinalResults(personSingleResults);
                             }
+                            groupByPkeys.add(groupByPkey);
                         }
+                        personSingleResult.setGroupByPkeys(groupByPkeys);
                     }
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return  null;
-            } finally {
-                PhoenixJDBCHelper.closeConnection(conn, pstm);
             }
-        } else if (subQueryOpts != null){
-            try {
-                pstm = conn.prepareStatement(sql);
-                pstm.setString(1, searchRecordOpts.getSubQueryOptsList().get(0).getQueryId());
-                ResultSet resultSet = pstm.executeQuery();
-                while (resultSet.next()) {
-                    ObjectSearchResult originObjectSearchResult = (ObjectSearchResult) ObjectUtil.byteToObject(resultSet
-                            .getBytes(SearchRecordTable.RESULT));
-                    if (originObjectSearchResult != null) {
-                        List<PersonSingleResult> personSingleResults = originObjectSearchResult.getFinalResults();
-                        String queryId = subQueryOpts.get(0).getQueryId();
-                        finnalObjectSearchResult.setSearchStatus(originObjectSearchResult.getSearchStatus());
-                        finnalObjectSearchResult.setSearchTotalId(originObjectSearchResult.getSearchTotalId());
-                        PersonSingleResult personSingleResultOrigin = null;
-                        for (PersonSingleResult tmp : personSingleResults) {
-                            if (queryId != null && queryId.equals(tmp.getSearchRowkey())) {
-                                personSingleResultOrigin = tmp;
-                                break;
-                            }
-                        }
-
-                        PersonSingleResult personSingleResult = new PersonSingleResult();
-                        personSingleResult.setSearchNums(0);
-                        if (personSingleResultOrigin != null) {
-                            personSingleResult.setSearchRowkey(personSingleResultOrigin.getSearchRowkey());
-                            personSingleResult.setSearchPhotos(personSingleResultOrigin.getSearchPhotos());
-                            List<PersonObject>  personObjects = personSingleResultOrigin.getPersons();
-                            Map<String, List<PersonObject>> orderByPkeys = personObjects.stream()
-                                    .collect(groupingBy(PersonObject::getPkey));
-                            List<GroupByPkey> groupByPkeys = new ArrayList<>();
-                            GroupByPkey groupByPkey;
-                            for(Map.Entry<String, List<PersonObject>> entry : orderByPkeys.entrySet()) {
-                                groupByPkey = new GroupByPkey();
-                                groupByPkey.setPkey(entry.getKey());
-                                List<PersonObject> personObjectList = entry.getValue();
-                                groupByPkey.setPersons(personObjectList);
-                                if (personObjectList != null) {
-                                    groupByPkey.setTotal(personObjectList.size());
-                                }
-                                groupByPkeys.add(groupByPkey);
-                            }
-                            personSingleResult.setPersons(null);
-                            personSingleResult.setGroupByPkeys(groupByPkeys);
-                            List<PersonSingleResult> personSingleResultsFinale = new ArrayList<>();
-                            personSingleResultsFinale.add(personSingleResult);
-                            finnalObjectSearchResult.setFinalResults(personSingleResultsFinale);
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return  null;
-            } finally {
-                PhoenixJDBCHelper.closeConnection(conn, pstm);
-            }
+            personSingleResult.setPersons(null);
+            personSingleResults.add(personSingleResult);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        finnalObjectSearchResult.setSearchStatus(0);
+        finnalObjectSearchResult.setFinalResults(personSingleResults);
+        int pageSize = searchRecordOpts.getSize();
+        int start = searchRecordOpts.getStart();
+        new ObjectInfoHandlerTool().formatTheObjectSearchResult(finnalObjectSearchResult, start, pageSize);
         return finnalObjectSearchResult;
     }
 

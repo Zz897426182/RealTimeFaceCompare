@@ -10,47 +10,38 @@ import java.util.List;
 public class ObjectInfoHandlerTool {
     private org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ObjectInfoHandlerTool.class);
     public void saveSearchRecord(Connection conn, ObjectSearchResult objectSearchResult) {
-        if (objectSearchResult == null) {
+        if (objectSearchResult == null || objectSearchResult.getSearchStatus() == 1
+                || objectSearchResult.getFinalResults() == null || objectSearchResult.getFinalResults().size() == 0) {
             LOG.info("获取的结果为空");
             return;
         }
         List<PersonSingleResult> personSingleResults = objectSearchResult.getFinalResults();
-        if (personSingleResults != null && personSingleResults.size() > 0) {
-            PreparedStatement pstm  = null;
-            String sql = "upsert into " + SearchRecordTable.TABLE_NAME + "(" + SearchRecordTable.ID
-                    + ", " +SearchRecordTable.RESULT + ", " + SearchRecordTable.RECORDDATE + ") values(?,?,?)";
-            if (personSingleResults.size() == 1) {
-                if (conn != null) {
-                    try {
-                        pstm = conn.prepareStatement(sql);
-                        String id = objectSearchResult.getSearchTotalId();
-                        pstm.setString(1, id);
-                        pstm.setBytes(2, ObjectUtil.objectToByte(objectSearchResult));
-                        pstm.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-                        pstm.executeUpdate();
-                        conn.commit();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+
+        PreparedStatement pstm;
+        String sql = "upsert into " + SearchRecordTable.TABLE_NAME + "(" + SearchRecordTable.ID
+                + ", " +SearchRecordTable.RESULT + ", " + SearchRecordTable.RECORDDATE + ") values(?,?,?)";
+        if (conn != null) {
+            try{
+                for (PersonSingleResult personSingleResult : personSingleResults) {
+                    pstm = conn.prepareStatement(sql);
+                    String id;
+                    if (personSingleResults.size() == 1) {
+                        id = objectSearchResult.getSearchTotalId();
+                    } else {
+                        id = personSingleResult.getSearchRowkey();
                     }
+                    pstm.setString(1, id);
+                    pstm.setBytes(2, ObjectUtil.objectToByte(personSingleResult));
+                    pstm.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+                    pstm.executeUpdate();
                 }
-            } else {
-                try{
-                    for (PersonSingleResult personSingleResult : personSingleResults) {
-                        pstm = conn.prepareStatement(sql);
-                        String id = personSingleResult.getSearchRowkey();
-                        pstm.setString(1, id);
-                        pstm.setBytes(2, ObjectUtil.objectToByte(personSingleResult));
-                        pstm.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-                        pstm.executeUpdate();
-                    }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    conn.commit();
                 } catch (SQLException e) {
                     e.printStackTrace();
-                } finally {
-                    try {
-                        conn.commit();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }
@@ -121,37 +112,6 @@ public class ObjectInfoHandlerTool {
         }
     }
 
-    public  PreparedStatement getStaticPrepareStatementV2(Connection conn, PersonObject person, String sql) {
-        PreparedStatement pstm;
-        try {
-            pstm = conn.prepareStatement(sql);
-            pstm.setString(1, person.getId());
-            pstm.setString(2, person.getName());
-            pstm.setString(3, person.getPlatformid());
-            pstm.setString(4, person.getTag());
-            pstm.setString(5, person.getPkey());
-            pstm.setString(6, person.getIdcard());
-            pstm.setInt(7, person.getSex());
-            pstm.setBytes(8, person.getPhoto());
-            if (person.getFeature() != null && person.getFeature().length == 512) {
-                pstm.setArray(9,
-                        conn.createArrayOf("FLOAT", PersonObject.otherArrayToObject(person.getFeature())));
-            } else {
-                pstm.setArray(9, null);
-            }
-            pstm.setString(10, person.getReason());
-            pstm.setString(11, person.getCreator());
-            pstm.setString(12, person.getCphone());
-            pstm.setTimestamp(13, person.getUpdatetime());
-            pstm.setInt(14, person.getImportant());
-            pstm.setInt(15, person.getStatus());
-            return pstm;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     /**
      *
      * @param personSingleResult
@@ -195,12 +155,10 @@ public class ObjectInfoHandlerTool {
     /**
      * 根据请求参数，进行分页处理
      */
-    public void formatTheObjectSearchResult(ObjectSearchResult objectSearchResult, PSearchArgsModel pSearchArgsModel) {
+    public void formatTheObjectSearchResult(ObjectSearchResult objectSearchResult, int start, int size) {
         if (objectSearchResult == null) {
             return;
         }
-        Integer start = pSearchArgsModel.getStart();
-        Integer size = pSearchArgsModel.getPageSize();
         List<PersonSingleResult> personSingleResults = objectSearchResult.getFinalResults();
 
         List<PersonSingleResult> finalPersonSingleResults = new ArrayList<>();
