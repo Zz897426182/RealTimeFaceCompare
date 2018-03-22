@@ -89,6 +89,21 @@ function config_cluster_over_ftp()
     # 替换config-cluster-over_ftp.properties中线程数：key=value（替换key字段的值value）
     sed -i "s#^thread.number=.*#thread.number=${THREAD_NUMBER}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
 
+    ### 从project-conf.properties读取配置zk所需配置IP
+        # 根据字段zookeeper_installnode，查找配置文件中，zk的安装节点所在IP端口号的值，这些值以分号分割
+        ZK_HOSTS=`sed '/zookeeper_installnode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+        # 将这些分号分割的ip用放入数组
+        zk_arr=(${ZK_HOSTS//;/ })
+        zkpro=''
+        for zk_host in ${zk_arr[@]}
+        do
+            zkpro="$zkpro$zk_host:2181,"
+        done
+        zkpro=${zkpro%?}
+
+        # 替换producer-over-ftp.properties中：key=value（替换key字段的值value）
+        sed -i "s#^zookeeperAddress=.*#zookeeperAddress=${zkpro}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
+
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 }
 #####################################################################

@@ -6,6 +6,16 @@
 	http://code.alibabatech.com/schema/dubbo
 	http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
+    <!--ftp 模块接口以及实现-->
+    <bean id="FtpAddresService" class="com.hzgc.service.address.FtpAddressServiceImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.address.FtpAddressService" ref="FtpAddresService" />
+
+    <bean id="MQSubscription" class="com.hzgc.service.address.MQSubscriptionImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.address.MQSubscription" ref="MQSubscription" />
+
+    <bean id="MQShow" class="com.hzgc.service.address.MQShowImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.address.MQShow" ref="MQShow" />
+
     <!--device 模块的接口和实现-->
     <bean id="DeviceService" class="com.hzgc.service.device.DeviceServiceImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.device.DeviceService" ref="DeviceService" />
@@ -19,6 +29,11 @@
 
     <bean id="DynamicPhotoServiceImpl" class="com.hzgc.service.dynamicrepo.DynamicPhotoServiceImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.DynamicPhotoService" ref="DynamicPhotoServiceImpl"/>
+
+    <!--特征提取 接口以及实现-->
+    <bean id="FaceExtract" class="com.hzgc.service.feature.FaceExtractImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.feature.FaceExtract" ref="FaceExtract" />
+
     <!--静态信息库的接口，以及相应的实现类-->
     <!--对象信息的处理-->
     <bean id="ObjectInfoHandler" class="com.hzgc.service.staticrepo.ObjectInfoHandlerImpl"/>

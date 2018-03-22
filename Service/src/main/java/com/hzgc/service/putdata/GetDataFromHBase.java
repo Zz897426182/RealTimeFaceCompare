@@ -1,6 +1,5 @@
-package com.hzgc.service.getdata;
+package com.hzgc.service.putdata;
 
-import com.hzgc.service.putdata.MapToJson;
 import com.hzgc.service.util.HBaseHelper;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;

@@ -1,7 +1,9 @@
-package com.hzgc.jni;
+package com.hzgc.service.feature;
 
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.feature.FaceExtract;
+import com.hzgc.jni.FaceFunction;
+import com.hzgc.jni.NativeFunction;
 import org.apache.log4j.Logger;
 
 public class FaceExtractImpl implements FaceExtract {

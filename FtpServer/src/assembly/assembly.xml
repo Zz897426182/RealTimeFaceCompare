@@ -18,9 +18,6 @@
             <includes>
                <include>**</include>
            </includes>
-            <excludes>
-                <exclude>spring-context.xml</exclude>
-            </excludes>
             <outputDirectory>conf</outputDirectory>
         </fileSet>
     </fileSets>

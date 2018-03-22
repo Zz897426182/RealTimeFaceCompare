@@ -1,4 +1,4 @@
-package com.hzgc.collect.ftp.address;
+package com.hzgc.service.address;
 
 import com.hzgc.collect.expand.util.FTPAddressProperHelper;
 import com.hzgc.dubbo.address.FtpAddressService;

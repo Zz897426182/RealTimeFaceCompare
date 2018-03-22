@@ -1,5 +1,7 @@
 package com.hzgc.collect.ftp.command.impl;
 
+import com.hzgc.collect.expand.subscribe.FtpSwitchObject;
+import com.hzgc.collect.expand.subscribe.ReceiveObject;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FtpPathMessage;
 import com.hzgc.collect.expand.processer.RocketMQProducer;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.List;
 
 public class STOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(STOR.class);
@@ -104,7 +107,7 @@ public class STOR extends AbstractCommand {
 
                 // attempt to close the output stream so that errors in
                 // closing it will return an error to the client (FTPSERVER-119)
-                if(outStream != null) {
+                if (outStream != null) {
                     outStream.close();
                 }
 
@@ -143,21 +146,26 @@ public class STOR extends AbstractCommand {
                 } else {
                     int faceNum = FtpUtils.pickPicture(fileName);
                     if (fileName.contains(".jpg") && faceNum > 0) {
-                        //拼装ftpUrl (带主机名的ftpUrl)
-                        String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
-                        //获取ftpUrl (带IP地址的ftpUrl)
-                        String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
-                        LogEvent event = new LogEvent();
-                        event.setTimeStamp(System.currentTimeMillis());
-                        event.setAbsolutePath(file.getFileAbsolutePa());
-                        event.setFtpPath(ftpHostNameUrl);
-                        event.setStatus("0");
                         FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
-                        //发送到rocketMQ
-                        RocketMQProducer
-                                .getInstance()
-                                .send(message.getIpcid(), message.getTimeStamp(), ftpIpUrl.getBytes());
-                        context.getScheduler().putData(event);
+                        if (FtpSwitchObject.isFtpSwitch()) {
+                            List<String> showList = ReceiveObject.getInstance().getIpcIdList_show();
+                            if (!showList.isEmpty()) {
+                                if (showList.contains(message.getIpcid())) {
+                                    sendMQAndWriteLogEvent(fileName, file, message, context);
+                                }
+                            } else {
+                                List<String> subscriptionList = ReceiveObject.getInstance().getIpcIdList_subscription();
+                                if (!subscriptionList.isEmpty()) {
+                                    if (subscriptionList.contains(message.getIpcid())) {
+                                        sendMQAndWriteLogEvent(fileName, file, message, context);
+                                    }
+                                } else {
+                                    writeLogEvent(fileName, file, context);
+                                }
+                            }
+                        } else {
+                            sendMQAndWriteLogEvent(fileName, file, message, context);
+                        }
                     }
                 }
             }
@@ -173,5 +181,31 @@ public class STOR extends AbstractCommand {
             session.resetState();
             session.getDataConnection().closeDataConnection();
         }
+    }
+
+    private void sendMQAndWriteLogEvent(String fileName, FtpFile file, FtpPathMessage message, FtpServerContext context) {
+        //拼装ftpUrl (带主机名的ftpUrl)
+        String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
+        //获取ftpUrl (带IP地址的ftpUrl)
+        String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
+        LogEvent event = new LogEvent();
+        event.setTimeStamp(System.currentTimeMillis());
+        event.setAbsolutePath(file.getFileAbsolutePa());
+        event.setFtpPath(ftpHostNameUrl);
+        event.setStatus("0");
+        //发送到rocketMQ
+        RocketMQProducer.getInstance().send(message.getIpcid(), message.getTimeStamp(), ftpIpUrl.getBytes());
+        context.getScheduler().putData(event);
+    }
+
+    private void writeLogEvent(String fileName, FtpFile file, FtpServerContext context) {
+        //拼装ftpUrl (带主机名的ftpUrl)
+        String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
+        LogEvent event = new LogEvent();
+        event.setTimeStamp(System.currentTimeMillis());
+        event.setAbsolutePath(file.getFileAbsolutePa());
+        event.setFtpPath(ftpHostNameUrl);
+        event.setStatus("0");
+        context.getScheduler().putData(event);
     }
 }
