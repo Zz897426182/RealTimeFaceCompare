@@ -52,10 +52,14 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         List<ClusteringAttribute> clusteringList = new ArrayList<>();
         try {
             Result result = clusteringInfoTable.get(get);
-            clusteringList = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES));
-            if (sortParam != null && sortParam.length() > 0) {
-                SortParam sortParams = ListUtils.getOrderStringBySort(sortParam);
-                ListUtils.sort(clusteringList, sortParams.getSortNameArr(), sortParams.getIsAscArr());
+            if (result != null && result.size() > 0) {
+                clusteringList = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES));
+                if (sortParam != null && sortParam.length() > 0) {
+                    SortParam sortParams = ListUtils.getOrderStringBySort(sortParam);
+                    ListUtils.sort(clusteringList, sortParams.getSortNameArr(), sortParams.getIsAscArr());
+                }
+            } else {
+                return null;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -138,8 +142,13 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
-        for (SearchHit result : results) {
-            alarmIdList.add((int) result.getSource().get(DynamicTable.ALARM_ID));
+        if (results != null && results.length > 0) {
+            for (SearchHit result : results) {
+                alarmIdList.add((int) result.getSource().get(DynamicTable.ALARM_ID));
+            }
+        } else {
+            LOG.info("no data get from es");
+            return null;
         }
         return alarmIdList;
     }

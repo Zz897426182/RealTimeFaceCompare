@@ -69,13 +69,14 @@ public class ClusteringTest {
         putDataToHBase("2018-02-bak", clusteringAttributeList2);*/
         ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
         ClusteringInfo clusteringInfo;
-        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 50, 50, "");
-        //System.out.println(clusteringInfo.getTotalClustering());
+        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 5, 50, "");
+        System.out.println(clusteringInfo.getClusteringAttributeList().get(1).getClusteringId());
         System.out.println(clusteringInfo.getClusteringAttributeList().size());
-        /*List<String> idList = new ArrayList<>();
-        idList.add("1-14cdc24f8-c1d3-4741-a96e-8da20998ab06");
-        clusteringSearchService.deleteClustering(idList, "2018-02", "no");
-        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 30, 50, "");
+        List<String> idList = new ArrayList<>();
+        /*idList.add("1-19");
+        clusteringSearchService.ignoreClustering(idList, "2018-02", "no");*/
+
+        /*clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 30, 50, "");
         System.out.println(clusteringInfo.getTotalClustering());
         System.out.println(clusteringInfo.getClusteringAttributeList().get(1).getClusteringId());*/
     }
