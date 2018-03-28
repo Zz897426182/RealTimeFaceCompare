@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+    <id>FtpServer</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <formats>
+        <format>tar.gz</format>
+        <format>dir</format>
+    </formats>
+    <fileSets>
+        <!--项目bin目录-->
+        <fileSet>
+            <directory>${project.basedir}/bin</directory>
+            <fileMode>0755</fileMode>
+            <outputDirectory>bin</outputDirectory>
+        </fileSet>
+        <!--项目resources目录-->
+        <fileSet>
+            <directory>${project.basedir}/src/main/resources</directory>
+            <includes>
+               <include>**</include>
+           </includes>
+            <excludes>
+                <exclude>spring-context.xml</exclude>
+            </excludes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <!--把间接依赖的jar 也包含进来 -->
+            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <!--是否解压 -->
+            <unpack>false</unpack>
+            <outputDirectory>lib</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+</assembly>

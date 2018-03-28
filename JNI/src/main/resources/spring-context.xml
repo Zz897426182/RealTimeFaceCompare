@@ -1,0 +1,13 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://code.alibabatech.com/schema/dubbo
+	http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--device 模块的接口和实现-->
+    <bean id="FaceExtract" class="com.hzgc.jni.FaceExtractImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.feature.FaceExtract" ref="FaceExtract" />
+
+</beans>

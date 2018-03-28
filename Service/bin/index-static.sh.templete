@@ -1,0 +1,104 @@
+#!/bin/bash
+## 动态信息库objectinfo表的映射
+curl -XDELETE 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json'
+curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
+{
+    "settings": {
+	    "number_of_shards":5,
+        "number_of_replicas":1,
+        "analysis": {
+            "filter": {
+                "trigrams_filter": {
+                    "type":     "ngram",
+                    "min_gram": 4,
+                    "max_gram": 20
+                }
+            },
+            "analyzer": {
+                "trigrams": {
+                    "type":      "custom",
+                    "tokenizer": "standard",
+                    "filter":   [
+                        "lowercase",
+                        "trigrams_filter"
+                    ]
+                },
+                "ik": {
+                    "tokenizer" : "ik_max_word"
+                }
+            }
+        }
+    },
+    "mappings": {
+        "person": {
+            "properties": {
+                "name" : {
+                    "type" : "text",
+                    "analyzer" : "ik_max_word",
+                    "fielddata" : true
+                },
+                "idcard" : {
+                    "type" : "text",
+                    "analyzer": "trigrams",
+                    "fielddata" : true
+                },
+                "sex" : {
+                    "type" : "long",
+                    "index" : "not_analyzed"
+                },
+                "reson" : {
+                    "type" : "text",
+                    "analyzer" : "ik_max_word"
+                },
+                "pkey" : {
+                    "type" : "text",
+                    "index" : "not_analyzed"
+                },
+                "tag" : {
+                    "type" : "text",
+                    "index" : "not_analyzed"
+                },
+                "creator" : {
+                    "type" : "text",
+                    "analyzer" : "ik_max_word"
+                },
+                "cphone" : {
+                    "type" : "text",
+                    "analyzer": "trigrams"
+                },
+                "platformid" : {
+                    "type" : "text",
+                    "index" : "not_analyzed"
+                },
+                "feature" : {
+                    "type" : "text",
+                    "index" : "not_analyzed"
+                },
+                "createtime" : {
+                    "type" : "date",
+                    "format": "yyyy-MM-dd HH:mm:ss"
+                },
+                "updatetime" : {
+                    "type" : "date",
+                    "format": "yyyy-MM-dd HH:mm:ss"
+                }
+            }
+        }
+    }
+}
+'
+
+curl -XPUT 's105:9200/objectinfo/_settings' -d '{
+    "index": {
+        "max_result_window": 1000000000
+    }
+}'
+curl -XPUT "http://s105:9200/objectinfo/_mapping/person/" -H 'Content-Type: application/json' -d'
+{
+  "properties": {
+    "pkey": {
+      "type":     "text",
+      "fielddata": true
+    }
+  }
+}'

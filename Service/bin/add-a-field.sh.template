@@ -1,0 +1,20 @@
+#!/bin/bash
+## 给elastic 添加一个索引
+curl -XPUT 's100:9200/dynamic/_mapping/person?pretty' -H 'Content-Type: application/json' -d'
+{
+  "person": {
+     "properties": {
+        "sj": {
+            "type": "long",
+            "index": "not_analyzed"
+        }
+    }
+  }
+}
+'
+## HBase shell 端手动添加协处理器
+## alter 'person',METHOD => 'table_att', 'coprocessor' \
+## =>'hdfs:///user/ldl/hbase2es-1.0-jar-with-dependencies.jar| \
+## com.hzgc.hbase2es.coproccessor.PersonRepo2EsObserver|1001| \
+## es_cluster=hbase2es-cluster,es_port=9300, \
+## es_hosts=172.18.18.100_172.18.18.101_172.18.18.102,es_index=dynamic,es_type=person'

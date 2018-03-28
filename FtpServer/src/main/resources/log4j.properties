@@ -1,0 +1,29 @@
+### 配置根Logger ###
+log4j.rootLogger=INFO,dateLogger,errorLogger
+
+### 控制台输出 ###
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.Target=System.out
+log4j.appender.console.Threshold=INFO
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d : %p : %c{1} : %m%n
+
+### 设置com.hzgc.ftpserver.listener.nio.FtpLoggingFilter日志级别 ###
+log4j.logger.com.hzgc.ftpserver.listener.nio.FtpLoggingFilter=WARN
+
+### 设置每天产生一个日志文件 ###
+log4j.appender.dateLogger=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.dateLogger.File=/opt/RealTimeFaceCompare/ftp/logs/ftpserver.log
+log4j.appender.dateLogger.Append=true
+log4j.appender.dateLogger.Threshold=INFO
+log4j.appender.dateLogger.DatePattern='.'yyyy-MM-dd
+log4j.appender.dateLogger.layout=org.apache.log4j.PatternLayout
+log4j.appender.dateLogger.layout.ConversionPattern=%d : %p : %c{1} : %m%n
+
+### 保存异常信息到单独文件 ###
+log4j.appender.errorLogger=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.errorLogger.File=/opt/RealTimeFaceCompare/ftp/logs/ftpError.log
+log4j.appender.errorLogger.Append=true
+log4j.appender.errorLogger.Threshold=ERROR
+log4j.appender.errorLogger.layout=org.apache.log4j.PatternLayout
+log4j.appender.errorLogger.layout.ConversionPattern=%d : %p : %c{1} : %m%n

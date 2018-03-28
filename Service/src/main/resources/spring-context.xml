@@ -1,0 +1,37 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://code.alibabatech.com/schema/dubbo
+	http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--device 模块的接口和实现-->
+    <bean id="DeviceService" class="com.hzgc.service.device.DeviceServiceImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.device.DeviceService" ref="DeviceService" />
+
+    <bean id="WarnRuleService" class="com.hzgc.service.device.WarnRuleServiceImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.device.WarnRuleService" ref="WarnRuleService"/>
+
+    <!--dynamicrepo 模块接口以及实现-->
+    <bean id="CapturePictureSearchService" class="com.hzgc.service.dynamicrepo.CapturePictureSearchServiceImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CapturePictureSearchService" ref="CapturePictureSearchService" />
+
+    <bean id="DynamicPhotoServiceImpl" class="com.hzgc.service.dynamicrepo.DynamicPhotoServiceImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.DynamicPhotoService" ref="DynamicPhotoServiceImpl"/>
+    <!--静态信息库的接口，以及相应的实现类-->
+    <!--对象信息的处理-->
+    <bean id="ObjectInfoHandler" class="com.hzgc.service.staticrepo.ObjectInfoHandlerImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.staticrepo.ObjectInfoHandler" ref="ObjectInfoHandler"/>
+
+    <!--对象搜索记录的处理-->
+    <bean id="SearchRecordHandler" class="com.hzgc.service.staticrepo.SearchRecordHandlerImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.staticrepo.SearchRecordHandler" ref="SearchRecordHandler" />
+
+    <bean id="HBaseHelper" class="com.hzgc.service.util.HBaseHelper"/>
+    <bean id="DeviceTable" class="com.hzgc.service.device.DeviceTable"/>
+    <bean id="ElasticSearchHelper" class="com.hzgc.service.staticrepo.ElasticSearchHelper"/>
+
+    <bean id="CaptureNumberService" class="com.hzgc.service.dynamicrepo.CptureNumberImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CaptureNumberService" ref="CaptureNumberService"/>
+</beans>
