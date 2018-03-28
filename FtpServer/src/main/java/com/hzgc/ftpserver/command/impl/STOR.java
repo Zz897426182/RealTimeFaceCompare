@@ -222,7 +222,7 @@ public class STOR extends AbstractCommand {
                         BufferQueue bufferQueue = context.getBufferQueue();
                         BlockingQueue<String> queue = bufferQueue.getQueue();
                         try {
-                            queue.put(fileName);
+                            queue.put(file.getAbsolutePath());
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

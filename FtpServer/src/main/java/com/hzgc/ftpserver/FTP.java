@@ -78,8 +78,8 @@ public class FTP extends ClusterOverFtp {
     public static void main(String args[]) throws Exception {
         FTP ftp = new FTP();
         ftp.loadConfig();
-        ftp.startFtpServer();
         DataProcess data = new DataProcess();
         data.reader();
+        ftp.startFtpServer();
     }
 }
