@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FTP extends ClusterOverFtp {
+
     private static Logger LOG = Logger.getLogger(FTP.class);
 
     private static Map<Integer, Integer> pidMap = new HashMap<>();
