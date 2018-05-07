@@ -12,13 +12,20 @@
 #                              定义变量                                #
 #----------------------------------------------------------------------#
 cd `dirname $0`
-BIN_DIR=`pwd`   ###bin目录
+BIN_DIR=`pwd`      ###cluster模块bin目录
 cd ..
-DEPLOY_DIR=`pwd`  ###项目根目录
+DEPLOY_DIR=`pwd`   ###cluster模块
+cd ..
+PROJECT_DIR=`pwd`  ###项目根目录
+SERVICE_DIR=$PROJECT_DIR/service  ###项目service模块
+SERIVICEBIN_DIR=$SERVICE_DIR/bin  ###service模块bin目录
+
 CONF_DIR=$DEPLOY_DIR/logs  ###集群log日志目录
 LOG_FILE=${LOG_DIR}/create-schedule-job-to-zip.log  ##log日志文件
 SCHEMA_FILE="schema-merge-parquet-file.sh"
 OFFLINE_FILE="start-face-offline-alarm-job.sh"
+KEEP_FACECONSUMER="keep-faceconsumer-running.sh"
+DYNAMICSHOW_TABLE="get-dynamicshow-table-run.sh"
 
 cd ${BIN_DIR}  ##进入cluster的bin目录
 mkdir -p midTableAndPersonTableNow
@@ -51,9 +58,37 @@ else
    echo "command=sh \${cluster_home}/start-face-offline-alarm-job.sh" >> start-face-offline-alarm-job.job
 fi
 
-mv midtable.job person_table_now.job midTableAndPersonTableNow
-zip midTableAndPersonTableNow.zip midTableAndPersonTableNow
-zip person_table_before.job.zip person_table_before.job
-zip start-face-offline-alarm-job.job.zip start-face-offline-alarm-job.job
+if [ ! -f "$KEEP_FACECONSUMER" ]; then
+   echo "The keep-faceconsumer-running.sh is not exist!!!"
+else
+   touch keep-faceconsumer-running.job  ##创建保证Spark任务Faceconsumer不离线的job文件
+   echo "type=command" >> keep-faceconsumer-running.job
+   echo "cluster_home=/opt/RealTimeFaceCompare/cluster/bin" >> keep-faceconsumer-running.job
+   echo "command=sh \${cluster_home}/keep-faceconsumer-running.sh" >> keep-faceconsumer-running.job
+fi
 
-rm -rf midTableAndPersonTableNow person_table_before.job start-face-offline-alarm-job.job
+mv midtable.job person_table_now.job midTableAndPersonTableNow
+
+### zip midTableAndPersonTableNow.zip midTableAndPersonTableNow
+zip person_table_before_oneday.job.zip person_table_before.job
+zip start-face-offline-alarm-job_oneday.job.zip start-face-offline-alarm-job.job
+zip keep-faceconsumer-running_fiveminute.job.zip keep-faceconsumer-running.job
+
+mv person_table_before_oneday.job.zip start-face-offline-alarm-job_oneday.job.zip keep-faceconsumer-running_fiveminute.job.zip midTableAndPersonTableNow
+
+rm -rf  person_table_before.job start-face-offline-alarm-job.job get-dynamicshow-table-run.job keep-faceconsumer-running.job
+
+cd ${SERIVICEBIN_DIR}  ##进入service的bin目录
+
+if [ ! -f "$DYNAMICSHOW_TABLE" ]; then
+   echo "The get-dynamicshow-table-run.sh is not exist!!!"
+else
+   touch get-dynamicshow-table-run.job  ##创建get-dynamicshow-table-run.job文件
+   echo "type=command" >> get-dynamicshow-table-run.job
+   echo "service_home=/opt/RealTimeFaceCompare/service/bin" >> get-dynamicshow-table-run.job
+   echo "commad=sh \${service_home}/get-dynamicshow-table-run.sh" >> get-dynamicshow-table-run.job
+fi
+
+zip get-dynamicshow-table-run_onehour.job.zip get-dynamicshow-table-run.job
+mv get-dynamicshow-table-run_onehour.job.zip $BIN_DIR/midTableAndPersonTableNow
+rm -rf get-dynamicshow-table-run.job
