@@ -216,6 +216,7 @@ public class PrisonServiceImpl implements PrisonService {
         try {
             pstm = conn.prepareStatement(sql);
             pstm.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
