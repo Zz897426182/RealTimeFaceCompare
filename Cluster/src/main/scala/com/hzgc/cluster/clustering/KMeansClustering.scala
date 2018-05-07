@@ -1,8 +1,8 @@
 package com.hzgc.cluster.clustering
 
-import java.sql.{Blob, Connection, DriverManager, PreparedStatement, Timestamp}
+import java.sql.{Connection, DriverManager, PreparedStatement, Timestamp}
 import java.text.SimpleDateFormat
-import java.util
+import java.{sql, util}
 import java.util.{Calendar, Date, Properties, UUID}
 
 import com.hzgc.cluster.consumer.PutDataToEs
@@ -47,7 +47,7 @@ object KMeansClustering {
     val hostField = properties.getProperty("job.clustering.mysql.field.host")
     val spicField = properties.getProperty("job.clustering.mysql.field.spic")
     val bpicField = properties.getProperty("job.clustering.mysql.field.bpic")
-    val partitionNum = properties.getProperty("job.clustering.partition.number").toInt
+    //val partitionNum = properties.getProperty("job.clustering.partition.number").toInt
     val month_temp = properties.getProperty("job.clustering.month")
     val capture_url = properties.getProperty("job.clustering.capture.database.url")
     val capture_data_table = properties.getProperty("job.clustering.capture.data")
@@ -211,15 +211,16 @@ object KMeansClustering {
         val finalData = lastResult.filter(data => data._2 >= appearCount).map(data => data._1).map(data => (data._1, data._2.toArray.sortWith((a, b) => a._2.getAs[Timestamp]("time").toLocalDateTime.toString > b._2.getAs[Timestamp]("time").toLocalDateTime.toString)))
         var conn: Connection = null
         var pst: PreparedStatement = null
-        var blobSmall: Blob = null
-        var blobBig: Blob = null
+        var blobSmall: sql.Blob = null
+        var blobBig: sql.Blob = null
         finalData.map(f = data => {
           conn = DriverManager.getConnection(capture_url, capture_data_table_user, capture_data_table_password)
           val attribute = new ClusteringAttribute()
           val clusterId = region + "-" + data._1.toString + "-" + uuidString
           val smallPic = FTPDownloadUtils.downloadftpFile2Bytes(data._2.head._2.getAs[String]("spic"))
           val bigPic = FTPDownloadUtils.downloadftpFile2Bytes(data._2.head._2.getAs[String]("bpic"))
-          val insertDataSql = "insert into " + capture_data_table + "(id,upate_time,small_picture,big_picture) values (?,?,?,?)"
+          val insertDataSql = "insert into " + capture_data_table + "(id,update_time,small_picture,big_picture,camera_code,capture_person_type) values (?,?,?,?,?,?)"
+          println("+++++++++++" + insertDataSql)
           try {
             pst = conn.prepareStatement(insertDataSql)
             pst.setString(1, clusterId)
@@ -230,6 +231,8 @@ object KMeansClustering {
             blobBig = conn.createBlob()
             blobBig.setBytes(1, bigPic)
             pst.setBlob(4, blobBig)
+            pst.setString(5, data._2.head._2.getAs[String]("ipc"))
+            pst.setString(6,"0002")
             pst.executeUpdate()
             LOG.info("put data to t_capture_data successful")
           } catch {
@@ -264,7 +267,7 @@ object KMeansClustering {
             val rowKey = yearMon + "-" + region + "-" + data._1 + "-" + uuidString
             val clusterId = rowKey + "-" + data._1 + "-" + uuidString
             LOG.info("the current clusterId is:" + clusterId)
-            val insertSql = "insert into " + capture_track_table + "(id,upate_time) values (?,?)"
+            val insertSql = "insert into " + capture_track_table + "(id,update_time,camera_code) values (?,?,?)"
             pst = conn.prepareStatement(insertSql)
             data._2.foreach(p => {
               val date = new Date(p._2.getAs[Timestamp]("time").getTime)
@@ -277,6 +280,7 @@ object KMeansClustering {
                 val uuidStr = UUID.randomUUID().toString
                 pst.setString(1, uuidStr)
                 pst.setTimestamp(2, p._2.getAs[Timestamp]("time"))
+                pst.setString(3, p._2.getAs[String]("ipc"))
                 pst.executeUpdate()
                 LOG.info("put data to t_capture_track successful")
               } catch {

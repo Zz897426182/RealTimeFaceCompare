@@ -8,9 +8,9 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-class ObjectInfoHandlerTool {
+public class ObjectInfoHandlerTool {
     private org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ObjectInfoHandlerTool.class);
-    void saveSearchRecord(Connection conn, ObjectSearchResult objectSearchResult) {
+    public void saveSearchRecord(Connection conn, ObjectSearchResult objectSearchResult) {
         if (objectSearchResult == null || objectSearchResult.getSearchStatus() == 1
                 || objectSearchResult.getFinalResults() == null || objectSearchResult.getFinalResults().size() == 0) {
             LOG.info("获取的结果为空");
@@ -80,7 +80,7 @@ class ObjectInfoHandlerTool {
         return personObject;
     }
 
-    PreparedStatement getStaticPrepareStatementV1(Connection conn, PersonObject person, String sql) {
+    public PreparedStatement getStaticPrepareStatementV1(Connection conn, PersonObject person, String sql) {
         PreparedStatement pstm;
         try {
             pstm = conn.prepareStatement(sql);
