@@ -23,4 +23,10 @@ public interface PrisonService {
      * @return PrisonCountResults, 封装好的结果。
      */
     PrisonCountResults countByLocation(PrisonSearchOpts prisonSearchOpts);
+
+    /**
+     * 重置所有对象库的人员信息
+     * @return 0,表示重置成功，1，表示失败
+     */
+    int resetLocation();
 }

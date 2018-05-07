@@ -3,6 +3,7 @@ package com.hzgc.service.staticrepo;
 import com.hzgc.dubbo.staticrepo.*;
 import org.apache.log4j.Logger;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -198,5 +199,29 @@ public class PrisonServiceImpl implements PrisonService {
         LOG.info(sql);
         LOG.info(prisonCountResults);
         return prisonCountResults;
+    }
+
+    /**
+     * 重置所有对象的位置信息
+     * @return 0，成功，1，失败
+     */
+    @Override
+    public int resetLocation() {
+        Connection conn = null;
+        PreparedStatement pstm = null;
+        String sql = "upsert into " +
+                ObjectInfoTable.TABLE_NAME + "(" + ObjectInfoTable.ROWKEY + ", " + ObjectInfoTable.LOCATION + ")"
+                + " select " + ObjectInfoTable.ROWKEY +", null from " + ObjectInfoTable.TABLE_NAME;
+        conn = PhoenixJDBCHelper.getInstance().getConnection();
+        try {
+            pstm = conn.prepareStatement(sql);
+            pstm.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 1;
+        } finally {
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
+        }
+        return 0;
     }
 }
