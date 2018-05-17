@@ -4,12 +4,17 @@ import com.hzgc.dubbo.dynamicrepo.CaptureNumberService;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
+import org.elasticsearch.search.aggregations.metrics.sum.SumAggregationBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,6 +35,7 @@ public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 查询es的动态库，返回总抓拍数量和今日抓拍数量
+     *
      * @param ipcId 设备ID：ipcId
      * @return 返回总抓拍数量和今日抓拍数量
      */
@@ -53,7 +59,7 @@ public class CaptureNumberImpl implements CaptureNumberService {
                 .setTypes(type)
                 .setQuery(QueryBuilders
                         .matchPhraseQuery(DynamicTable.DATE,
-                                endTime.substring(0, endTime.indexOf(" ")) ))
+                                endTime.substring(0, endTime.indexOf(" "))))
                 .setSize(1)
                 .get();
         int todayTotolNumber = (int) responseV2.getHits().getTotalHits();
@@ -64,13 +70,14 @@ public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 查询es的静态库，返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
+     *
      * @param platformId 平台ID
      * @return 返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
      */
     @Override
     public synchronized Map<String, Integer> staticNumberService(String platformId) {
         Map<String, Integer> map = new HashMap<>();
-        String sql = "select " + ObjectInfoTable.PKEY +", count(" + ObjectInfoTable.PKEY +") as countNum from " +
+        String sql = "select " + ObjectInfoTable.PKEY + ", count(" + ObjectInfoTable.PKEY + ") as countNum from " +
                 ObjectInfoTable.TABLE_NAME + " where " + ObjectInfoTable.PLATFORMID + " = ?";
         Connection conn = PhoenixJDBCHelper.getInstance().getConnection();
         PreparedStatement pstm = null;
@@ -92,9 +99,10 @@ public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 根据入参ipcid的list、startTime和endTime去es查询到相应的值
-     * @param ipcids 设备ID：ipcid
+     *
+     * @param ipcids    设备ID：ipcid
      * @param startTime 搜索的开始时间
-     * @param endTime 搜索的结束时间
+     * @param endTime   搜索的结束时间
      * @return 返回某段时间内，这些ipcid的抓拍的总数量
      */
     @Override
@@ -103,7 +111,7 @@ public class CaptureNumberImpl implements CaptureNumberService {
         Map<String, Integer> map = new HashMap<>();
         BoolQueryBuilder totolQuery = QueryBuilders.boolQuery();
         if (ipcids != null && ipcids.size() > 0) {
-            for (String ipcid : ipcids){
+            for (String ipcid : ipcids) {
                 totolQuery.should(QueryBuilders.matchPhraseQuery("ipcid", ipcid));
             }
         }
@@ -113,26 +121,25 @@ public class CaptureNumberImpl implements CaptureNumberService {
             timeQuery.must(QueryBuilders.rangeQuery("time").gte(startTime).lte(endTime));
         }
         timeQuery.must(totolQuery);
-        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
-                .prepareSearch("dynamicshow")
-                .setTypes("person")
-                .setQuery(timeQuery)
-                .setSize(100000000)
-                .get();
-        SearchHits searchHits = searchResponse.getHits();
-        SearchHit[] hits = searchHits.getHits();
-        if (times != null && times.size() > 0) {
-            for (String time : times) {
-                int count = 0;
-                for (SearchHit hit : hits) {
-                    String actTime = (String) hit.getSource().get("time");
-                    int actCount = (int) hit.getSource().get("count");
-                    if (Objects.equals(actTime, time)) {
-                        count += actCount;
-                    }
-                }
-                map.put(time, count);
-            }
+        TransportClient client = ElasticSearchHelper.getEsClient();
+        SearchRequestBuilder sbuilder = client.prepareSearch("dynamicshow").setTypes("person").setQuery(timeQuery);
+        TermsAggregationBuilder timeagg = AggregationBuilders.terms("times").field("time").size(1000000);
+        SumAggregationBuilder countagg = AggregationBuilders.sum("count_count").field("count");
+        timeagg.subAggregation(countagg);
+        sbuilder.addAggregation(timeagg);
+        SearchResponse response = sbuilder.execute().actionGet();
+        Map<String, Aggregation> aggMap = response.getAggregations().asMap();
+        Terms time = (Terms) aggMap.get("times");
+        Iterator<Terms.Bucket> teamBucket = (Iterator<Terms.Bucket>) time.getBuckets().iterator();
+        for (String time1 : times) {
+            map.put(time1, 0);
+        }
+        while (teamBucket.hasNext()) {
+            Terms.Bucket buck = teamBucket.next();
+            String timess = (String) buck.getKey();
+            Map<String, Aggregation> subagg = buck.getAggregations().asMap();
+            int count_count = (int) ((InternalSum) subagg.get("count_count")).getValue();
+            map.put(timess, count_count);
         }
         return map;
     }
