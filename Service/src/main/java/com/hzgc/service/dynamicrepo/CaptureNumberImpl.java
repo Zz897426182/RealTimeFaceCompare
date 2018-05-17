@@ -4,12 +4,17 @@ import com.hzgc.dubbo.dynamicrepo.CaptureNumberService;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
+import org.elasticsearch.search.aggregations.metrics.sum.SumAggregationBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -103,7 +108,7 @@ public class CaptureNumberImpl implements CaptureNumberService {
         Map<String, Integer> map = new HashMap<>();
         BoolQueryBuilder totolQuery = QueryBuilders.boolQuery();
         if (ipcids != null && ipcids.size() > 0) {
-            for (String ipcid : ipcids){
+            for (String ipcid : ipcids) {
                 totolQuery.should(QueryBuilders.matchPhraseQuery("ipcid", ipcid));
             }
         }
@@ -113,26 +118,25 @@ public class CaptureNumberImpl implements CaptureNumberService {
             timeQuery.must(QueryBuilders.rangeQuery("time").gte(startTime).lte(endTime));
         }
         timeQuery.must(totolQuery);
-        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
-                .prepareSearch("dynamicshow")
-                .setTypes("person")
-                .setQuery(timeQuery)
-                .setSize(100000000)
-                .get();
-        SearchHits searchHits = searchResponse.getHits();
-        SearchHit[] hits = searchHits.getHits();
-        if (times != null && times.size() > 0) {
-            for (String time : times) {
-                int count = 0;
-                for (SearchHit hit : hits) {
-                    String actTime = (String) hit.getSource().get("time");
-                    int actCount = (int) hit.getSource().get("count");
-                    if (Objects.equals(actTime, time)) {
-                        count += actCount;
-                    }
-                }
-                map.put(time, count);
-            }
+        TransportClient client = ElasticSearchHelper.getEsClient();
+        SearchRequestBuilder sbuilder = client.prepareSearch("dynamicshow").setTypes("person").setQuery(timeQuery);
+        TermsAggregationBuilder timeagg = AggregationBuilders.terms("times").field("time").size(1000000);
+        SumAggregationBuilder countagg = AggregationBuilders.sum("count_count").field("count");
+        timeagg.subAggregation(countagg);
+        sbuilder.addAggregation(timeagg);
+        SearchResponse response = sbuilder.execute().actionGet();
+        Map<String, Aggregation> aggMap = response.getAggregations().asMap();
+        Terms time = (Terms) aggMap.get("times");
+        Iterator<Terms.Bucket> teamBucket = (Iterator<Terms.Bucket>) time.getBuckets().iterator();
+        for (String time1 : times) {
+            map.put(time1, 0);
+        }
+        while (teamBucket.hasNext()) {
+            Terms.Bucket buck = teamBucket.next();
+            String timess = (String) buck.getKey();
+            Map<String, Aggregation> subagg = buck.getAggregations().asMap();
+            int count_count = (int) ((InternalSum) subagg.get("count_count")).getValue();
+            map.put(timess, count_count);
         }
         return map;
     }
