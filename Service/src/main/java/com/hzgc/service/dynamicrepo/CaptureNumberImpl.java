@@ -35,6 +35,7 @@ public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 查询es的动态库，返回总抓拍数量和今日抓拍数量
+     *
      * @param ipcId 设备ID：ipcId
      * @return 返回总抓拍数量和今日抓拍数量
      */
@@ -58,7 +59,7 @@ public class CaptureNumberImpl implements CaptureNumberService {
                 .setTypes(type)
                 .setQuery(QueryBuilders
                         .matchPhraseQuery(DynamicTable.DATE,
-                                endTime.substring(0, endTime.indexOf(" ")) ))
+                                endTime.substring(0, endTime.indexOf(" "))))
                 .setSize(1)
                 .get();
         int todayTotolNumber = (int) responseV2.getHits().getTotalHits();
@@ -69,13 +70,14 @@ public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 查询es的静态库，返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
+     *
      * @param platformId 平台ID
      * @return 返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
      */
     @Override
     public synchronized Map<String, Integer> staticNumberService(String platformId) {
         Map<String, Integer> map = new HashMap<>();
-        String sql = "select " + ObjectInfoTable.PKEY +", count(" + ObjectInfoTable.PKEY +") as countNum from " +
+        String sql = "select " + ObjectInfoTable.PKEY + ", count(" + ObjectInfoTable.PKEY + ") as countNum from " +
                 ObjectInfoTable.TABLE_NAME + " where " + ObjectInfoTable.PLATFORMID + " = ?";
         Connection conn = PhoenixJDBCHelper.getInstance().getConnection();
         PreparedStatement pstm = null;
@@ -97,9 +99,10 @@ public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 根据入参ipcid的list、startTime和endTime去es查询到相应的值
-     * @param ipcids 设备ID：ipcid
+     *
+     * @param ipcids    设备ID：ipcid
      * @param startTime 搜索的开始时间
-     * @param endTime 搜索的结束时间
+     * @param endTime   搜索的结束时间
      * @return 返回某段时间内，这些ipcid的抓拍的总数量
      */
     @Override
