@@ -40,7 +40,7 @@ function start_consumer()
             mkdir $LOG_DIR;
     fi
 
-    java -classpath $CONF_DIR:$LIB_JARS:$COMMON_JARS com.hzgc.service.dynamicrepo.CptureNumberImplTimer | tee -a  ${LOG_FILE}
+    java -classpath $CONF_DIR:$LIB_JARS:$COMMON_JARS com.hzgc.service.dynamicrepo.CaptureNumberImplTimer | tee -a  ${LOG_FILE}
 }
 #########################################################################
 # 函数名：main
