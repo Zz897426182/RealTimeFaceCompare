@@ -11,6 +11,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
@@ -107,39 +108,38 @@ public class CaptureNumberImpl implements CaptureNumberService {
      */
     @Override
     public synchronized Map<String, Integer> timeSoltNumber(List<String> ipcids, String startTime, String endTime) {
-        List<String> times = new ArrayList<>();
-        Map<String, Integer> map = new HashMap<>();
-        BoolQueryBuilder totolQuery = QueryBuilders.boolQuery();
-        if (ipcids != null && ipcids.size() > 0) {
-            for (String ipcid : ipcids) {
-                totolQuery.should(QueryBuilders.matchPhraseQuery("ipcid", ipcid));
-            }
-        }
-        BoolQueryBuilder timeQuery = QueryBuilders.boolQuery();
+        Map<String,Integer> map = new HashMap<>();
+        List<String> times;
         if (startTime != null && endTime != null && !startTime.equals("") && !endTime.equals("")) {
             times = getHourTime(startTime, endTime);
-            timeQuery.must(QueryBuilders.rangeQuery("time").gte(startTime).lte(endTime));
-        }
-        timeQuery.must(totolQuery);
-        TransportClient client = ElasticSearchHelper.getEsClient();
-        SearchRequestBuilder sbuilder = client.prepareSearch("dynamicshow").setTypes("person").setQuery(timeQuery);
-        TermsAggregationBuilder timeagg = AggregationBuilders.terms("times").field("time").size(1000000);
-        SumAggregationBuilder countagg = AggregationBuilders.sum("count_count").field("count");
-        timeagg.subAggregation(countagg);
-        sbuilder.addAggregation(timeagg);
-        SearchResponse response = sbuilder.execute().actionGet();
-        Map<String, Aggregation> aggMap = response.getAggregations().asMap();
-        Terms time = (Terms) aggMap.get("times");
-        Iterator<Terms.Bucket> teamBucket = (Iterator<Terms.Bucket>) time.getBuckets().iterator();
-        for (String time1 : times) {
-            map.put(time1, 0);
-        }
-        while (teamBucket.hasNext()) {
-            Terms.Bucket buck = teamBucket.next();
-            String timess = (String) buck.getKey();
-            Map<String, Aggregation> subagg = buck.getAggregations().asMap();
-            int count_count = (int) ((InternalSum) subagg.get("count_count")).getValue();
-            map.put(timess, count_count);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (String oneHourStart : times) {
+                String oneHourEnd = null;
+                int count = 0;
+                try {
+                    long ohs = simpleDateFormat.parse(oneHourStart).getTime();
+                    long ohe = ohs + 60 * 60 * 1000;
+                    oneHourEnd = simpleDateFormat.format(ohe);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient().prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                        .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                        .setQuery(QueryBuilders.rangeQuery("exacttime").gte(oneHourStart).lte(oneHourEnd)).setSize(0);
+                TermsAggregationBuilder teamAgg = AggregationBuilders.terms("ipc_count").field("ipcid.keyword");
+                searchRequestBuilder.addAggregation(teamAgg);
+                SearchResponse response = searchRequestBuilder.execute().actionGet();
+                Map<String, Aggregation> aggMap = response.getAggregations().asMap();
+                for (String a : aggMap.keySet()) {
+                    StringTerms terms = (StringTerms) aggMap.get(a);
+                    for (StringTerms.Bucket bucket : terms.getBuckets()) {
+                        if (ipcids.contains(bucket.getKey())){
+                            count += bucket.getDocCount();
+                        }
+                    }
+                }
+                map.put(oneHourStart, count);
+            }
         }
         return map;
     }

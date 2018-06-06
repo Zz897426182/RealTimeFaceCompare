@@ -262,54 +262,6 @@ function index_es_dynamic()
 }
 
 
-#####################################################################
-# 函数名: index_es_dynamic_show
-# 描述: index_es的子函数，替换index-dynamicshow.sh中的节点名
-# 参数: N/A
-# 返回值: N/A
-# 其他: N/A
-#####################################################################
-function index_es_dynamic_show()
-{
-    # 判断脚本是否存在，存在才执行
-    if [ -f "${BIN_DIR}/index-dynamicshow.sh" ]; then
-
-        ### 替换index-dynamicshow.sh中的节点名，共三处
-        # 要替换的节点名，如s106
-        ES_IP=$(grep es_servicenode ${CONF_FILE} | cut -d '=' -f2)
-        ES_Host=$(cat /etc/hosts|grep "$ES_IP" | awk '{print $2}')
-
-        ## 第一处
-        # 要查找的目标
-        a1="curl -XDELETE '"
-        b1="/dynamic?pretty'  -H 'Content-Type: application/json'"
-        replace1="curl -XDELETE '${ES_Host}:9200/dynamic?pretty'  -H 'Content-Type: application/json'"
-        # ^表示以什么开头，.*a表示以a结尾。替换以a1开头、b1结尾匹配到的字符串为repalce1
-        sed -i "s#^${a1}.*${b1}#${replace1}#g" ${BIN_DIR}/index-dynamicshow.sh
-
-        ## 第二处
-        a2="curl -XPUT '"
-        b2="/dynamic?pretty' -H 'Content-Type: application/json' -d'"
-        replace2="curl -XPUT '${ES_Host}:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'"
-        sed -i "s#^${a2}.*${b2}#${replace2}#g" ${BIN_DIR}/index-dynamicshow.sh
-
-        ## 第三处
-        a3="curl -XPUT '"
-        b3="/dynamic/_settings' -d '{"
-        replace3="curl -XPUT '${ES_Host}:9200/dynamic/_settings' -d '{"
-        sed -i "s#^${a3}.*${b3}#${replace3}#g" ${BIN_DIR}/index-dynamicshow.sh
-
-
-
-        sh ${BIN_DIR}/index-dynamicshow.sh
-		if [ $? = 0 ];then
-			echo "修改index-dynamicshow.sh成功并执行......"  | tee  -a  $LOG_FILE
-		fi
-    else
-        echo "index-dynamicshow.sh不存在...."
-    fi
-}
-
 function main() {
     ## create kafka topic
     sh   ${BIN_DIR}/create-kafka-topic.sh 
@@ -317,7 +269,6 @@ function main() {
     create_person_table_mid_table
     create_searchRes_device_clusteringInfo_table
     index_es_dynamic
-    index_es_dynamic_show
 }
 
 main
